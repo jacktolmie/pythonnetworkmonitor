@@ -119,3 +119,8 @@ fabric.properties
 # Added by Jack
 Notes/
 .env
+__pycache__/
+modules/__pycache__/
+network_monitor/migrations/
+network_monitor/__pycache__/
+

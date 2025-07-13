@@ -1,6 +1,9 @@
+import re
 import subprocess
 import sys
-import re
+
+from ipaddress import ip_address
+from xml.etree.ElementTree import tostring, Element
 
 win = """Pinging google.ca [142.251.41.35] with 32 bytes of data:
 Reply from 142.251.41.35: bytes=32 time=66ms TTL=119
@@ -22,43 +25,62 @@ linux = """PING google.ca (142.251.41.35) 56(84) bytes of data.
 rtt min/avg/max/mdev = 65.776/65.787/65.799/0.011 ms
 """
 
+
+# This function will check if for valid IP addresses and if num_pings is an int.
+# Both IPv4 and IPv6 are checked.
+def check_args(sent_address: str, num_pings: int) -> bool:
+    try:
+        ip_address(sent_address)
+        if not isinstance(num_pings, int):
+            return False
+        return True
+    except ValueError:
+        return False
+
+
 # This function will ping an address and return the results. If the
 # node is not responding, it returns a message the ip not pingable
-def ping_node(ip_address, num_pings="5"):
+def ping_node(sent_address: str, num_pings: int = 5):
+    # Check if arguments are valid.
+    if not(check_args(sent_address, num_pings)):
+        return "Invalid arguments"
 
     os = sys.platform
     print("Operating system:", os)
     try:
         # Check O/S. If windows, use -n, otherwise use -c for ping flag.
         return subprocess.check_output(
-            ["ping", "-n" if os == "win32" else "-c", num_pings, ip_address]
+            ["ping", "-n" if os == "win32" else "-c", str(num_pings), sent_address]
         ).decode()
 
     except subprocess.CalledProcessError:
-        return "Could not ping " + ip_address
+        return "Could not ping " + sent_address
 
 
 # This function calls ping_node and checks the results. If not pingable
 # return ping_node reply, otherwise return float of min/max/avg ping speeds;
-def get_results(ip_address, num_pings="5"):
+def get_results(sent_address: str, num_pings: int = 5):
+    # Check if arguments are valid.
+    if not(check_args(sent_address, num_pings)):
+        return "Invalid arguments"
+
     # Get ping response from ping_node.
-    get_data = ping_node(ip_address, num_pings)
+    get_data = ping_node(sent_address, num_pings)
 
     # If IP not pingable, return get_data string
     if get_data.startswith("Could"):
-        return get_data
+        return get_data, False
 
     # os = sys.platform
-    min_ping, max_ping, avg_ping, packets_lost = (None,) * 4
+    packets_lost, min_ping, max_ping, avg_ping = (None,) * 4
 
     op = "win32"  # reserve for testing windows
-
     # match op: # reserve for testing windows
     match sys.platform:
         # Match patterns for either Windows or Linux ping reply capture groups. Add them to the returned variables.
         case "linux" | "darwin" | "android":
             pattern = r"received, (\d+\.?\d*)[% a-zA-Z0-9\s\/=,]+mdev = (\d+.?\d+)\/(\d+.?\d+)\/(\d+.?\d+)"
-            results = re.search(pattern, linux) #get_data)
+            results = re.search(pattern, get_data)
             if results:
                 packets_lost, min_ping, avg_ping, max_ping = results.groups()
                 print(results)
@@ -73,4 +95,5 @@ def get_results(ip_address, num_pings="5"):
         case _:
             return "Invalid Operating System"
 
-    return [float(x) for x in [packets_lost, min_ping, max_ping, avg_ping]]
+    # Return a list of floats, and one bool.
+    return [float(x) for x in [packets_lost, min_ping, max_ping, avg_ping]], True
