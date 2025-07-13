@@ -1,6 +1,7 @@
 import re
 import subprocess
 import sys
+import socket
 
 from ipaddress import ip_address
 from xml.etree.ElementTree import tostring, Element
@@ -35,15 +36,19 @@ def check_args(sent_address: str, num_pings: int) -> bool:
             return False
         return True
     except ValueError:
-        return False
+        try:
+            test = socket.gethostbyaddr(sent_address)
+            print(test)
+            print("Valid IP address: %s" % sent_address)
+            return True
+
+        except socket.gaierror as e:
+            return False
 
 
 # This function will ping an address and return the results. If the
 # node is not responding, it returns a message the ip not pingable
 def ping_node(sent_address: str, num_pings: int = 5):
-    # Check if arguments are valid.
-    if not(check_args(sent_address, num_pings)):
-        return "Invalid arguments"
 
     os = sys.platform
     print("Operating system:", os)
@@ -60,9 +65,6 @@ def ping_node(sent_address: str, num_pings: int = 5):
 # This function calls ping_node and checks the results. If not pingable
 # return ping_node reply, otherwise return float of min/max/avg ping speeds;
 def get_results(sent_address: str, num_pings: int = 5):
-    # Check if arguments are valid.
-    if not(check_args(sent_address, num_pings)):
-        return "Invalid arguments"
 
     # Get ping response from ping_node.
     get_data = ping_node(sent_address, num_pings)
