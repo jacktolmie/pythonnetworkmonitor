@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Monitor</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for better aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+        }
+        .ping-output-box {
+            background-color: #1a202c; /* Dark background for terminal-like output */
+            color: #48bb78; /* Green text for successful output */
+            font-family: 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 0.5rem; /* Rounded corners */
+        }
+        .ping_num {
+            max-height:50px;
+            max-width: 40px;
+            text-align: center;
+            border-radius: 0.5rem;
+        }
+        .status-light {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .status-light.active {
+            background-color: #48bb78; /* Green */
+            box-shadow: 0 0 8px #48bb78;
+        }
+        .status-light.inactive {
+            background-color: #ef4444; /* Red */
+            box-shadow: 0 0 8px #ef4444;
+        }
+        /* Custom button styles with Tailwind classes */
+        .btn-primary {
+            @apply bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105;
+        }
+        .btn-secondary {
+            @apply bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-3 rounded-lg shadow-sm transition duration-300 ease-in-out;
+        }
+        .btn-danger {
+            @apply bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg shadow-sm transition duration-300 ease-in-out;
+        }
+        .card {
+            @apply bg-white p-6 rounded-xl shadow-lg;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">Network Monitor Dashboard</h1>
+
+        <!-- Ping Only Section -->
+        <div class="card mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Ping a Host (One-Off)</h2>
+            <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                <input type="text" id="pingHostInput" placeholder="Enter IP or Hostname (e.g., google.com)"
+                       class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                <input type = "text" id="num_pings", placeholder="5" class="ping_num p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                <button id="pingButton" class="btn-primary">Ping Host</button>
+
+            </div>
+            <div id="pingOutput" class="ping-output-box p-4 text-sm">
+                <!-- Ping results will appear here -->
+                Awaiting ping request...
+            </div>
+        </div>
+
+        <!-- Add Host to Monitor Section -->
+        <div class="card mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Add Host to Monitor</h2>
+            <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                <input type="text" id="hostname", placeholder="Enter Host Name"
+                    class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                <input type="text" id="host_ip" placeholder="Enter IP or Hostname to monitor"
+                       class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                <button id="addMonitorButton" class="btn-primary">Add to Monitoring</button>
+            </div>
+            <div id="addMonitorMessage" class="text-sm mt-2 text-gray-600"></div>
+        </div>
+
+        <!-- Monitored Hosts Section -->
+        <div class="card">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Monitored Hosts</h2>
+            <div id="monitoredHostsList" class="space-y-4">
+                <!-- Monitored hosts will be loaded here -->
+                <p class="text-gray-500 text-center">Loading monitored hosts...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to display messages (e.g., for add monitor)
+        function displayMessage(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `text-sm mt-2 ${isError ? 'text-red-600' : 'text-green-600'}`;
+        }
+
+        // Function to fetch and display monitored hosts
+        async function fetchMonitoredHosts() {
+            const hostsListDiv = document.getElementById('monitoredHostsList');
+            hostsListDiv.innerHTML = '<p class="text-gray-500 text-center">Loading monitored hosts...</p>'; // Show loading
+
+            try {
+                // Fetch data from your Django API endpoint
+                const response = await fetch('/monitor/api/hosts/');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data.hosts.length === 0) {
+                    hostsListDiv.innerHTML = '<p class="text-gray-500 text-center">No hosts currently being monitored. Add one above!</p>';
+                    return;
+                }
+
+                hostsListDiv.innerHTML = ''; // Clear loading message
+
+                data.hosts.forEach(host => {
+                    const hostCard = document.createElement('div');
+                    hostCard.className = 'bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col md:flex-row items-start md:items-center justify-between';
+                    hostCard.innerHTML = `
+                        <div class="flex items-center mb-2 md:mb-0">
+                            <span class="status-light ${host.is_active ? 'active' : 'inactive'}"></span>
+                            <div>
+                                <strong class="text-lg text-gray-800">${host.target_string}</strong>
+                                ${host.resolved_ip ? `<span class="text-gray-600 text-sm ml-2">(${host.resolved_ip})</span>` : ''}
+                                ${host.is_hostname ? `<span class="text-gray-500 text-xs ml-2">(Hostname)</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-700 md:ml-4 flex-grow">
+                            <p>Last Down: <span class="${host.last_downtime ? 'text-red-500 font-medium' : 'text-green-500'}">${host.last_downtime ? new Date(host.last_downtime).toLocaleString() : 'Never'}</span></p>
+                            <p>Last Checked: ${host.last_checked ? new Date(host.last_checked).toLocaleString() : 'N/A'}</p>
+                        </div>
+                        <div class="flex items-center mt-2 md:mt-0 md:ml-4">
+                            <label for="freq-${host.id}" class="mr-2 text-gray-700 text-sm">Ping every:</label>
+                            <select id="freq-${host.id}" data-host-id="${host.id}" class="p-1 border border-gray-300 rounded-md text-sm">
+                                <option value="1" ${host.ping_frequency_minutes === 1 ? 'selected' : ''}>1 min</option>
+                                <option value="5" ${host.ping_frequency_minutes === 5 ? 'selected' : ''}>5 mins</option>
+                                <option value="10" ${host.ping_frequency_minutes === 10 ? 'selected' : ''}>10 mins</option>
+                                <option value="30" ${host.ping_frequency_minutes === 30 ? 'selected' : ''}>30 mins</option>
+                                <option value="60" ${host.ping_frequency_minutes === 60 ? 'selected' : ''}>1 hour</option>
+                            </select>
+                            <button data-host-id="${host.id}" class="btn-danger ml-2 delete-btn">Delete</button>
+                        </div>
+                    `;
+                    hostsListDiv.appendChild(hostCard);
+                });
+
+                // Attach event listeners for frequency changes and delete buttons
+                document.querySelectorAll('select[id^="freq-"]').forEach(selectElement => {
+                    selectElement.onchange = (event) => updatePingFrequency(event.target.dataset.hostId, event.target.value);
+                });
+                document.querySelectorAll('.delete-btn').forEach(button => {
+                    button.onclick = (event) => deleteMonitorTarget(event.target.dataset.hostId);
+                });
+
+            } catch (error) {
+                console.error('Error fetching monitored hosts:', error);
+                hostsListDiv.innerHTML = '<p class="text-red-500 text-center">Failed to load hosts. Please try again.</p>';
+            }
+        }
+
+        // Function to update ping frequency (sends POST request to Django backend)
+        async function updatePingFrequency(hostId, frequency) {
+            try {
+                const response = await fetch('/monitor/api/update_frequency/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: hostId, frequency: frequency })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    console.log(data.message);
+                    // No need to re-fetch all hosts immediately, as the change is minor
+                } else {
+                    console.error('Failed to update frequency:', data.error);
+                    alert('Failed to update frequency: ' + data.error); // Using alert for simplicity
+                }
+            } catch (error) {
+                console.error('Error updating ping frequency:', error);
+                alert('An error occurred while updating frequency.'); // Using alert for simplicity
+            }
+        }
+
+        // Function to delete a monitored target (sends POST request to Django backend)
+        async function deleteMonitorTarget(hostId) {
+            if (!confirm('Are you sure you want to delete this monitored host?')) { // Using confirm for simplicity
+                return;
+            }
+            try {
+                const response = await fetch('/monitor/api/delete_target/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: hostId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    console.log(data.message);
+                    fetchMonitoredHosts(); // Re-fetch to update the list
+                } else {
+                    console.error('Failed to delete target:', data.error);
+                    alert('Failed to delete target: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error deleting target:', error);
+                alert('An error occurred while deleting target.');
+            }
+        }
+
+
+        // Event Listener for Ping Button (one-off ping)
+        document.getElementById('pingButton').addEventListener('click', async () => {
+            const hostInput = document.getElementById('pingHostInput');
+            const host = hostInput.value.trim();
+            const pingOutputDiv = document.getElementById('pingOutput');
+
+            if (!host) {
+                pingOutputDiv.textContent = 'Please enter a host to ping.';
+                pingOutputDiv.className = 'ping-output-box p-4 text-sm text-red-500';
+                return;
+            }
+
+            pingOutputDiv.textContent = `Pinging ${host}... Please wait.`;
+            pingOutputDiv.className = 'ping-output-box p-4 text-sm text-yellow-400';
+
+            try {
+                const response = await fetch('/monitor/api/ping/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ host: host })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    pingOutputDiv.textContent = data.output || 'No output received.';
+                    pingOutputDiv.className = `ping-output-box p-4 text-sm ${data.ping_successful ? 'text-green-400' : 'text-red-400'}`;
+                    if (data.error) {
+                         pingOutputDiv.textContent += `\nError: ${data.error}`;
+                    }
+                } else {
+                    pingOutputDiv.textContent = `Error: ${data.error}`;
+                    pingOutputDiv.className = 'ping-output-box p-4 text-sm text-red-500';
+                }
+            } catch (error) {
+                console.error('Error during ping request:', error);
+                pingOutputDiv.textContent = `An error occurred: ${error.message}`;
+                pingOutputDiv.className = 'ping-output-box p-4 text-sm text-red-500';
+            }
+        });
+
+        // Event Listener for Add Monitor Button
+        document.getElementById('addMonitorButton').addEventListener('click', async () => {
+            const hostInput = document.getElementById('addMonitorHostInput');
+            const host = hostInput.value.trim();
+            const messageDiv = document.getElementById('addMonitorMessage');
+
+            if (!host) {
+                displayMessage('addMonitorMessage', 'Please enter a host to add.', true);
+                return;
+            }
+
+            displayMessage('addMonitorMessage', 'Adding host...', false);
+
+            try {
+                const response = await fetch('/monitor/api/add_target/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ host: host })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    displayMessage('addMonitorMessage', data.message, false);
+                    hostInput.value = ''; // Clear input field
+                    fetchMonitoredHosts(); // Refresh the list of monitored hosts
+                } else {
+                    displayMessage('addMonitorMessage', `Error: ${data.error}`, true);
+                }
+            } catch (error) {
+                console.error('Error adding monitor target:', error);
+                displayMessage('addMonitorMessage', `An error occurred: ${error.message}`, true);
+            }
+        });
+
+
+        // Initial load of monitored hosts when the page loads
+        document.addEventListener('DOMContentLoaded', fetchMonitoredHosts);
+
+        // Periodically refresh the monitored hosts list (e.g., every 10 seconds)
+        // In a real application, a dedicated backend monitoring service would update
+        // the database, and this frontend would simply display the latest status.
+        // This interval simulates that by re-fetching the data.
+        setInterval(fetchMonitoredHosts, 10000); // Refresh every 10 seconds for demonstration
+    </script>
+</body>
+</html>

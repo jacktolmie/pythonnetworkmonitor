@@ -1,50 +1,6 @@
 import re
 import subprocess
 import sys
-import socket
-
-from ipaddress import ip_address
-from xml.etree.ElementTree import tostring, Element
-
-win = """Pinging google.ca [142.251.41.35] with 32 bytes of data:
-Reply from 142.251.41.35: bytes=32 time=66ms TTL=119
-Reply from 142.251.41.35: bytes=32 time=66ms TTL=119
-Reply from 142.251.41.35: bytes=32 time=66ms TTL=119
-Reply from 142.251.41.35: bytes=32 time=66ms TTL=119
-
-Ping statistics for 142.251.41.35:
-    Packets: Sent = 4, Received = 4, Lost = 30 (20% loss),
-Approximate round trip times in milli-seconds:
-    Minimum = 66ms, Maximum = 45ms, Average = 67ms"""
-
-linux = """PING google.ca (142.251.41.35) 56(84) bytes of data.
-64 bytes from yyz12s08-in-f3.1e100.net (142.251.41.35): icmp_seq=1 ttl=120 time=65.8 ms
-64 bytes from yyz12s08-in-f3.1e100.net (142.251.41.35): icmp_seq=2 ttl=120 time=65.8 ms
-
---- google.ca ping statistics ---
-2 packets transmitted, 2 received, 10% packet loss, time 1001ms
-rtt min/avg/max/mdev = 65.776/65.787/65.799/0.011 ms
-"""
-
-
-# This function will check if for valid IP addresses and if num_pings is an int.
-# Both IPv4 and IPv6 are checked.
-def check_args(sent_address: str, num_pings: int) -> bool:
-    try:
-        ip_address(sent_address)
-        if not isinstance(num_pings, int):
-            return False
-        return True
-    except ValueError:
-        try:
-            test = socket.gethostbyaddr(sent_address)
-            print(test)
-            print("Valid IP address: %s" % sent_address)
-            return True
-
-        except socket.gaierror as e:
-            return False
-
 
 # This function will ping an address and return the results. If the
 # node is not responding, it returns a message the ip not pingable
@@ -64,13 +20,14 @@ def ping_node(sent_address: str, num_pings: int = 5):
 
 # This function calls ping_node and checks the results. If not pingable
 # return ping_node reply, otherwise return float of min/max/avg ping speeds;
-def get_results(sent_address: str, num_pings: int = 5):
+def get_results(sent_address: str, hostname: str = "Node",  num_pings: int = 5):
 
     # Get ping response from ping_node.
     get_data = ping_node(sent_address, num_pings)
 
     # If IP not pingable, return get_data string
     if get_data.startswith("Could"):
+        print(get_data)
         return get_data, False
 
     # os = sys.platform

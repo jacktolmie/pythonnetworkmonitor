@@ -79,9 +79,9 @@ WSGI_APPLICATION = "pythonnetworkmonitor.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'pnm',      # The name of your database
-        'USER': 'jack',    # The database user you created
-        'PASSWORD': 'sudobork123', # The password for that user
+        'NAME': 'pnm',      # Name of the database
+        'USER': 'jack',     # Database user
+        'PASSWORD': 'sudobork123', # Database password
         'HOST': 'localhost',
         'PORT': '',
     }
