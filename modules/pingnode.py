@@ -2,9 +2,29 @@ import re
 import subprocess
 import sys
 
+win = """Pinging google.ca [142.251.41.35] with 32 bytes of data:
+Reply from 142.251.41.35: bytes=32 time=66ms TTL=119
+Reply from 142.251.41.35: bytes=32 time=66ms TTL=119
+Reply from 142.251.41.35: bytes=32 time=66ms TTL=119
+Reply from 142.251.41.35: bytes=32 time=66ms TTL=119
+
+Ping statistics for 142.251.41.35:
+    Packets: Sent = 4, Received = 4, Lost = 30 (20% loss),
+Approximate round trip times in milli-seconds:
+    Minimum = 66ms, Maximum = 45ms, Average = 67ms"""
+
+linux = """PING google.ca (142.251.41.35) 56(84) bytes of data.
+64 bytes from yyz12s08-in-f3.1e100.net (142.251.41.35): icmp_seq=1 ttl=120 time=65.8 ms
+64 bytes from yyz12s08-in-f3.1e100.net (142.251.41.35): icmp_seq=2 ttl=120 time=65.8 ms
+
+--- google.ca ping statistics ---
+2 packets transmitted, 2 received, 10% packet loss, time 1001ms
+rtt min/avg/max/mdev = 65.776/65.787/65.799/0.011 ms
+"""
+
 # This function will ping an address and return the results. If the
 # node is not responding, it returns a message the ip not pingable
-def ping_node(sent_address: str, num_pings: int = 5):
+def ping_node(sent_address: str, num_pings: int = 5) -> str:
 
     os = sys.platform
     print("Operating system:", os)
@@ -19,8 +39,8 @@ def ping_node(sent_address: str, num_pings: int = 5):
 
 
 # This function calls ping_node and checks the results. If not pingable
-# return ping_node reply, otherwise return float of min/max/avg ping speeds;
-def get_results(sent_address: str, hostname: str = "Node",  num_pings: int = 5):
+# return ping_node reply and False, otherwise return float of min/max/avg ping speeds and True;
+def get_results(sent_address: str, hostname: str = "Node",  num_pings: int = 5) -> tuple[list | str, bool]:
 
     # Get ping response from ping_node.
     get_data = ping_node(sent_address, num_pings)
@@ -52,7 +72,7 @@ def get_results(sent_address: str, hostname: str = "Node",  num_pings: int = 5):
                 print(results)
 
         case _:
-            return "Invalid Operating System"
+            return "Invalid Operating System", False
 
     # Return a list of floats, and one bool.
     return [float(x) for x in [packets_lost, min_ping, max_ping, avg_ping]], True

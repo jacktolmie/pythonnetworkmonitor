@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>Network Monitor</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,6 +14,15 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8; /* Light blue-gray background */
+        }
+        .host_output-box {
+            background-color: #1a202c; /* Dark background for terminal-like output */
+            color: #48bb78; /* Green text for successful output */
+            font-family: 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            max-height: 50px;
+/*             overflow-y: auto; */
+            border-radius: 0.5rem; /* Rounded corners */
         }
         .ping-output-box {
             background-color: #1a202c; /* Dark background for terminal-like output */
@@ -70,7 +80,7 @@
             <div class="flex flex-col sm:flex-row gap-4 mb-4">
                 <input type="text" id="pingHostInput" placeholder="Enter IP or Hostname (e.g., google.com)"
                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
-                <input type = "text" id="num_pings", placeholder="5" class="ping_num p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                <input type = "text" id="num_pings", value="5" placeholder="5" class="ping_num p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
                 <button id="pingButton" class="btn-primary">Ping Host</button>
 
             </div>
@@ -86,11 +96,17 @@
             <div class="flex flex-col sm:flex-row gap-4 mb-4">
                 <input type="text" id="hostname", placeholder="Enter Host Name"
                     class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
-                <input type="text" id="host_ip" placeholder="Enter IP or Hostname to monitor"
+                <input type="text" id="host_ip" placeholder="Enter IP or Host name to monitor"
                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
                 <button id="addMonitorButton" class="btn-primary">Add to Monitoring</button>
             </div>
-            <div id="addMonitorMessage" class="text-sm mt-2 text-gray-600"></div>
+            <div class="flex flex-col sm:flex-row gap-4 mb-4" >
+                <input type="text" id="description", placeholder="Optional Host Description"
+                    class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+            </div>
+            <div id="addHostOutput" class="host_output-box p-4 text-sm">
+
+            </div>
         </div>
 
         <!-- Monitored Hosts Section -->
@@ -138,9 +154,9 @@
                         <div class="flex items-center mb-2 md:mb-0">
                             <span class="status-light ${host.is_active ? 'active' : 'inactive'}"></span>
                             <div>
-                                <strong class="text-lg text-gray-800">${host.target_string}</strong>
+                                <strong class="text-lg text-gray-800">${host.is_hostname}</strong>
                                 ${host.resolved_ip ? `<span class="text-gray-600 text-sm ml-2">(${host.resolved_ip})</span>` : ''}
-                                ${host.is_hostname ? `<span class="text-gray-500 text-xs ml-2">(Hostname)</span>` : ''}
+
                             </div>
                         </div>
                         <div class="text-sm text-gray-700 md:ml-4 flex-grow">
@@ -214,8 +230,8 @@
                     console.log(data.message);
                     fetchMonitoredHosts(); // Re-fetch to update the list
                 } else {
-                    console.error('Failed to delete target:', data.error);
-                    alert('Failed to delete target: ' + data.error);
+                    console.error('Failed to delete target:', data.message);
+                    alert('Failed to delete target: ' + data.message);
                 }
             } catch (error) {
                 console.error('Error deleting target:', error);
@@ -226,9 +242,14 @@
 
         // Event Listener for Ping Button (one-off ping)
         document.getElementById('pingButton').addEventListener('click', async () => {
-            const hostInput = document.getElementById('pingHostInput');
-            const host = hostInput.value.trim();
+            const host = document.getElementById('pingHostInput').value.trim();
             const pingOutputDiv = document.getElementById('pingOutput');
+            const num_pings = parseInt(document.getElementById('num_pings').value.trim() || '5');
+
+            if (isNaN(num_pings) || num_pings < 1) {
+                pingOutputDiv.textContent = "Please insert valid number of pings";
+                return;
+            }
 
             if (!host) {
                 pingOutputDiv.textContent = 'Please enter a host to ping.';
@@ -243,7 +264,7 @@
                 const response = await fetch('/monitor/api/ping/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ host: host })
+                    body: JSON.stringify({ host: host, num_pings: num_pings })
                 });
                 const data = await response.json();
 
@@ -266,35 +287,46 @@
 
         // Event Listener for Add Monitor Button
         document.getElementById('addMonitorButton').addEventListener('click', async () => {
-            const hostInput = document.getElementById('addMonitorHostInput');
-            const host = hostInput.value.trim();
-            const messageDiv = document.getElementById('addMonitorMessage');
+            const host = document.getElementById('hostname').value.trim();
+            const messageDiv = document.getElementById('addHostOutput');
+            //const messageDiv = document.getElementById('addMonitorMessage');
+            const hostDescription = document.getElementById('description').value.trim();
+            const hostIp = document.getElementById('host_ip').value.trim();
 
-            if (!host) {
-                displayMessage('addMonitorMessage', 'Please enter a host to add.', true);
+            if (!host || !hostIp) {
+                messageDiv.textContent = "Please add a host name and IP";
+                // displayMessage(messageDiv, "Please add a host name and IP", false);
                 return;
             }
 
-            displayMessage('addMonitorMessage', 'Adding host...', false);
+            // displayMessage(messageDiv, 'Adding host...', false);
+            messageDiv.textContent ="Adding host test...";
 
             try {
                 const response = await fetch('/monitor/api/add_target/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ host: host })
+                    body: JSON.stringify({ host: host, host_ip: hostIp, description: hostDescription })
                 });
                 const data = await response.json();
 
                 if (data.success) {
-                    displayMessage('addMonitorMessage', data.message, false);
-                    hostInput.value = ''; // Clear input field
+                    // displayMessage('addMonitorMessage', data.message, false);
+                    message = data.message;
+                    messageDiv.textContent = data.message;
+                    messageDiv.value = ''; // Clear input field
                     fetchMonitoredHosts(); // Refresh the list of monitored hosts
                 } else {
-                    displayMessage('addMonitorMessage', `Error: ${data.error}`, true);
+                    // displayMessage('addMonitorMessage', `Error: ${data.error}`, true);
+                    messageDiv.textContent = data.message;
+                    hostname.value = '';
+                    host_ip.value = '';
+                    description.value = '';
+
                 }
             } catch (error) {
                 console.error('Error adding monitor target:', error);
-                displayMessage('addMonitorMessage', `An error occurred: ${error.message}`, true);
+                // displayMessage('addMonitorMessage', `An error occurred: ${error.message}`, true);
             }
         });
 
