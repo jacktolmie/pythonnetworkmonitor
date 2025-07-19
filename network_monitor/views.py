@@ -44,16 +44,25 @@ def ping_host_api(request):
 @require_GET
 def get_monitored_hosts_api(request):
     hosts_data = []
+    check_host = lambda target: PingHost.objects.filter(host_id = target).order_by('-timestamp').first()
+
     for target in Host.objects.all().order_by('name'):
-        latest_ping_result = PingHost.objects.filter(host_id = target).order_by('-timestamp').first()
+        latest_ping_result = check_host(target)
+
+        # If the host has no ping data, ping host and save data.
+        if not latest_ping_result:
+            get_host_info.get_host_info(hostname=target.name, host_ip=target.ip_address,save=True, num_pings=1)
+            latest_ping_result = check_host(target)
+
         hosts_data.append({
             'id': target.name,
             'target_string': target.description,
             'resolved_ip': target.ip_address,
             'is_hostname': target.name,
             'is_active': target.is_active,
+            'ping_interval': latest_ping_result.ping_interval,
             'last_checked': latest_ping_result.timestamp.isoformat(),
-            'last_downtime': latest_ping_result.last_downtime.isoformat() if latest_ping_result.last_downtime else None,
+            'last_downtime': latest_ping_result.last_downtime.isoformat() if latest_ping_result.last_downtime else None
         })
 
     return JsonResponse({'hosts': hosts_data})
@@ -92,23 +101,51 @@ def add_monitor_target_api(request):
 @csrf_exempt
 @require_POST
 def delete_monitor_target_api(request):
+
+    hostname = None
     try:
         data = json.loads(request.body)
-        get_host_obj = Host.objects.get(name = data['id'])
+        hostname = data.get('id')
+        frequency = data.get('frequency')
+
+        get_host_obj = Host.objects.get(name = hostname)
         deleted_host, details = get_host_obj.delete()
+
         return JsonResponse({
             'success': True,
-            'message': f"{deleted_host} has been deleted."
+            'message': f"{hostname} has been deleted."
         })
     except Host.DoesNotExist:
-        print(f"Does not exist")
         return JsonResponse({
             'success': False,
-            'message': f"does not exist."
+            'message': f"{hostname} does not exist."
         })
     except Exception as e:
-        print(f"Who knows how to delete: {e}")
         return JsonResponse({
             'success': False,
-            'message': f"{e}"
+            'message': f"Error deleting host: {e}"
         })
+
+@csrf_exempt
+@require_POST
+def update_ping_frequency_api(request):
+    try:
+        data =                  json.loads(request.body)
+        hostname =              PingHost.objects.get(host_id = Host.objects.get(name = data['id']))
+        hostname.ping_interval =int(data.get('frequency') if data.get('frequency') else 1)
+        hostname.save(update_fields=['ping_interval'])
+
+        return JsonResponse({
+            'success': True,
+            'message': f"Ping frequency for {hostname.host} updated to {hostname.ping_interval} minutes."
+        })
+
+    except Host.objects.get(name = data['id']).DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Target not found.'}, status=404)
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'Frequency must be an integer.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("Invalid JSON")

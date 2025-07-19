@@ -28,7 +28,6 @@ def get_host_info(hostname: str, host_ip: str, save: bool, num_pings: int = 5) -
             # Add host to database.
             add_result = save_ping_results(hostname, host_ip, ping_results, is_active)
 
-            test = add_result[0]
             return ("success", add_result[1]) if add_result[0] else ("failure", add_result[1])
 
         else :

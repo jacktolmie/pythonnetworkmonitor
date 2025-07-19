@@ -5,7 +5,7 @@ from network_monitor.models import Host, PingHost
 
 # This function creates or checks for existing host in the database, and saves ping results.
 def save_ping_results(hostname: str, host_ip: str, data: list[int], was_successful: bool) -> tuple[bool, str]:
-    print("Calling save_ping_results")
+
     try:
         with transaction.atomic():
             # Check if host exists already, or creates a new one in the database Host table.
