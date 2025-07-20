@@ -8,11 +8,12 @@ class Host(models.Model):
     description =   models.TextField(blank=True, null=True, help_text="Optional description of the host.")
     is_active =     models.BooleanField(default=True, help_text="Whether this host is currently being monitored.")
     added_date =    models.DateTimeField(auto_now_add=True, help_text="The date and time this host was added.")
+    ping_interval = models.IntegerField(null=True, blank=True, default=1)
 
     def __str__(self):
         return f"{self.name} ({self.ip_address})"
 
-
+# Results of the pings on the host.
 class PingHost(models.Model):
     host =          models.ForeignKey(Host, on_delete=models.CASCADE, related_name='ping_results', help_text="The host this ping result belongs to.")
     min_rtt =       models.FloatField(null=True, blank=True)
@@ -22,7 +23,7 @@ class PingHost(models.Model):
     timestamp =     models.DateTimeField(auto_now_add=True)
     was_successful =models.BooleanField(null=False, blank=True)
     last_downtime = models.DateTimeField(null=True, blank=True)
-    ping_interval = models.IntegerField(null=True, blank=True, default=1)
+
 
     def __str__(self):
         status =    "UP" if self.was_successful else "DOWN"

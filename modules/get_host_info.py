@@ -4,7 +4,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pythonnetworkmonitor.settings')
 django.setup()
 
-from modules import pingnode, check_args
+from modules import ping_node, check_args
 from modules.save_ping_results import save_ping_results
 
 def get_host_info(hostname: str, host_ip: str, save: bool, num_pings: int = 5) -> tuple[str, str]:
@@ -27,7 +27,6 @@ def get_host_info(hostname: str, host_ip: str, save: bool, num_pings: int = 5) -
 
             # Add host to database.
             add_result = save_ping_results(hostname, host_ip, ping_results, is_active)
-
             return ("success", add_result[1]) if add_result[0] else ("failure", add_result[1])
 
         else :

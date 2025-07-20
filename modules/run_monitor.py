@@ -1,10 +1,7 @@
-# pythonnetworkmonitor/management/commands/run_monitor.py
-# (This is a Django management command, a good way to run background tasks)
-
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.core.management.base import BaseCommand
-from network_monitor.models import Host, PingHost
+from network_monitor.models import Host
 
 class Command(BaseCommand):
     help = 'Runs the network monitoring tasks in the background.'

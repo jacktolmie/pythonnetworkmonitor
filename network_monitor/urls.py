@@ -14,4 +14,5 @@ urlpatterns = [
     path('api/add_target/', views.add_monitor_target_api, name='add_target_api'),
     path('api/update_frequency/', views.update_ping_frequency_api, name='update_frequency_api'),
     path('api/delete_target/', views.delete_monitor_target_api, name='delete_target_api'),
+    path('add-host-ajax/', views.add_host_ajax, name='add_host_ajax'),
 ]

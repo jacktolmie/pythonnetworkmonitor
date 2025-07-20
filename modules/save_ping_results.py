@@ -29,8 +29,8 @@ def save_ping_results(hostname: str, host_ip: str, data: list[int], was_successf
             else:
                 ping_result.last_downtime = timezone.now()
             ping_result.save()
-            return True, f"{hostname} with ip {host_ip} was created successfully" if created \
-                else f"{hostname} with ip {host_ip} was already being monitored"
+            return (True, f"{hostname} with ip {host_ip} was created successfully") if created \
+                else (False,f"{hostname} with ip {host_ip} was already being monitored")
 
     except IntegrityError as e:
         return False, f"Database Integrity Error for {host_ip}: {e}"

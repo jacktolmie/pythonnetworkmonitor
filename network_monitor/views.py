@@ -2,11 +2,9 @@ import json
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST, require_GET
-from django.views.decorators.csrf import csrf_exempt # Be careful with csrf_exempt in production!
 from django.utils import timezone
 
-from modules import get_host_info, pingnode
-from modules.save_ping_results import save_ping_results
+from modules import get_host_info, ping_node
 from .models import Host, PingHost
 
 
@@ -16,7 +14,6 @@ def index(request):
 
 # Retrieves the data from the host. Inputs will include the host,
 # number of pings (defaults to 5), and if it should be monitored.
-@csrf_exempt
 @require_POST
 def ping_host_api(request):
     try:
@@ -40,7 +37,6 @@ def ping_host_api(request):
     })
 
 # Returns a list of monitored hosts.
-@csrf_exempt
 @require_GET
 def get_monitored_hosts_api(request):
     hosts_data = []
@@ -60,7 +56,7 @@ def get_monitored_hosts_api(request):
             'resolved_ip': target.ip_address,
             'is_hostname': target.name,
             'is_active': target.is_active,
-            'ping_interval': latest_ping_result.ping_interval,
+            'ping_interval': target.ping_interval,
             'last_checked': latest_ping_result.timestamp.isoformat(),
             'last_downtime': latest_ping_result.last_downtime.isoformat() if latest_ping_result.last_downtime else None
         })
@@ -69,7 +65,6 @@ def get_monitored_hosts_api(request):
 
 # Adds a new target to be monitored.
 # Uses get_host_info with save=True.
-@csrf_exempt # For simplicity in development, but consider CSRF tokens for production!
 @require_POST
 def add_monitor_target_api(request):
     try:
@@ -87,18 +82,20 @@ def add_monitor_target_api(request):
     # Call get_host_info with save=True to handle validation, ping, and DB interaction
     result = get_host_info.get_host_info(hostname= host_input, host_ip= host_ip, save= True, num_pings= 2)
 
-    if result == 'success':
+    # Check result[0] ('success' or 'failure') for result of trying to add host.
+    if result[0] == 'success':
+        print("Added successfully")
         return JsonResponse({
             'success': True,
             'message': result[1]
         })
     else:
+        print("Failed to add")
         return JsonResponse({
             'success': False,
             'message': result[1]
         })
 
-@csrf_exempt
 @require_POST
 def delete_monitor_target_api(request):
 
@@ -126,18 +123,17 @@ def delete_monitor_target_api(request):
             'message': f"Error deleting host: {e}"
         })
 
-@csrf_exempt
 @require_POST
 def update_ping_frequency_api(request):
     try:
         data =                  json.loads(request.body)
-        hostname =              PingHost.objects.get(host_id = Host.objects.get(name = data['id']))
+        hostname =              Host.objects.get(name = data['id'])
         hostname.ping_interval =int(data.get('frequency') if data.get('frequency') else 1)
         hostname.save(update_fields=['ping_interval'])
 
         return JsonResponse({
             'success': True,
-            'message': f"Ping frequency for {hostname.host} updated to {hostname.ping_interval} minutes."
+            'message': f"Ping frequency for {hostname.name} updated to {hostname.ping_interval} minutes."
         })
 
     except Host.objects.get(name = data['id']).DoesNotExist:
@@ -149,3 +145,25 @@ def update_ping_frequency_api(request):
 
     except json.JSONDecodeError:
         return HttpResponseBadRequest("Invalid JSON")
+
+@require_POST
+def add_host_ajax(request):
+    try:
+        data = json.loads(request.body)
+        host_name = data.get('name')
+        ip_address = data.get('ip_address')
+
+        if not host_name or not ip_address:
+            return JsonResponse({'message': 'Host name and IP address are required.'}, status=400)
+
+        # Basic validation (add more robust validation as needed)
+        if MonitoredHost.objects.filter(name=host_name).exists():
+            return JsonResponse({'message': 'Host with this name already exists.'}, status=409)
+
+        MonitoredHost.objects.create(name=host_name, ip_address=ip_address)
+        return JsonResponse({'message': 'Host added successfully!'}, status=201)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'message': 'Invalid JSON.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'message': f'An error occurred: {str(e)}'}, status=500)
