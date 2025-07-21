@@ -31,6 +31,6 @@ def get_host_info(hostname: str, host_ip: str, save: bool, num_pings: int = 5) -
 
         else :
             # Return the ping results, and a blank string since it is a tuple being returned.
-            return pingnode.ping_node(host_ip, num_pings), ""
+            return ping_node.ping_node(host_ip, num_pings), ""
     else :
         return f"Invalid Hostname {hostname}", "Please enter a valid Hostname"

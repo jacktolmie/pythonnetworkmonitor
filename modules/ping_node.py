@@ -62,14 +62,14 @@ def get_results(sent_address: str, hostname: str = "Node",  num_pings: int = 5) 
             results = re.search(pattern, get_data)
             if results:
                 packets_lost, min_ping, avg_ping, max_ping = results.groups()
-                print(results)
+                #print(results)
 
         case "win32":
             pattern = r"Lost = \d+ \((\d+\.?\d*)[\s()0-9a-zA-Z%,-:=]+Minimum = (\d+)[a-zA-z, =]+(\d+)[a-zA-z, =]+(\d+)"
             results = re.search(pattern, win)
             if results:
                 packets_lost, min_ping, max_ping, avg_ping = results.groups()
-                print(results)
+                #print(results)
 
         case _:
             return "Invalid Operating System", False

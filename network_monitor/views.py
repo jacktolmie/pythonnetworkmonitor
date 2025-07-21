@@ -10,7 +10,7 @@ from .models import Host, PingHost
 
 # Web page.
 def index(request):
-    return render(request, 'network_monitor/index.html')
+    return render(request, 'network_monitor/index.html', {})
 
 # Retrieves the data from the host. Inputs will include the host,
 # number of pings (defaults to 5), and if it should be monitored.
