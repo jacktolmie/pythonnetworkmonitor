@@ -18,10 +18,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-53!@kxg_g&hx!ji6gx2js=$=r9qv_a)g(o!g*wficis0a#0m7*') # CHANGE THIS FOR PRODUCTION
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
-# SECRET_KEY = "django-insecure-53!@kxg_g&hx!ji6gx2js=$=r9qv_a)g(o!g*wficis0a#0m7*"
-# DEBUG = False
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
 # Application definition
 
