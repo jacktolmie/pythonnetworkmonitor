@@ -84,13 +84,13 @@ def add_monitor_target_api(request):
 
     # Check result[0] ('success' or 'failure') for result of trying to add host.
     if result[0] == 'success':
-        print("Added successfully")
+        # print("Added successfully")
         return JsonResponse({
             'success': True,
             'message': result[1]
         })
     else:
-        print("Failed to add")
+        # print("Failed to add")
         return JsonResponse({
             'success': False,
             'message': result[1]

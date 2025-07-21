@@ -27,7 +27,7 @@ rtt min/avg/max/mdev = 65.776/65.787/65.799/0.011 ms
 def ping_node(sent_address: str, num_pings: int = 5) -> str:
 
     os = sys.platform
-    print("Operating system:", os)
+    # print("Operating system:", os)
     try:
         # Check O/S. If windows, use -n, otherwise use -c for ping flag.
         return subprocess.check_output(
@@ -47,7 +47,7 @@ def get_results(sent_address: str, hostname: str = "Node",  num_pings: int = 5) 
 
     # If IP not pingable, return get_data string
     if get_data.startswith("Could"):
-        print(get_data)
+        # print(get_data)
         return get_data, False
 
     # os = sys.platform
