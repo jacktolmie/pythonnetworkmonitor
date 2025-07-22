@@ -23,7 +23,7 @@ def get_host_info(hostname: str, host_ip: str, save: bool, num_pings: int = 5) -
             host_ip = host_ip if check_arguments[1] == host_ip else check_arguments[1]
 
             # Get results of pinging host.
-            ping_results, is_active = pingnode.get_results(host_ip, hostname, num_pings)
+            ping_results, is_active = ping_node.get_results(host_ip, hostname, num_pings)
 
             # Add host to database.
             add_result = save_ping_results(hostname, host_ip, ping_results, is_active)
