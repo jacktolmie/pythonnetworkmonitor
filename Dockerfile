@@ -14,7 +14,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies needed for the entrypoint script
-RUN apt-get update && apt-get install -y netcat
+RUN apt-get update && apt-get install -y netcat-openbsd
 #RUN apk add --no-cache netcat-openbsd
 
 # Copy requirements.txt and install Python dependencies
