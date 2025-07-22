@@ -10,11 +10,11 @@ WORKDIR /app
 
 # Install system dependencies needed for psycopg2-binary
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc libpq-dev \
+    && apt-get install -y --no-install-recommends gcc netcat-openbsd iputils-ping libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies needed for the entrypoint script
-RUN apt-get update && apt-get install -y netcat-openbsd
+#RUN apt-get update && apt-get install -y netcat-openbsd
 #RUN apk add --no-cache netcat-openbsd
 
 # Copy requirements.txt and install Python dependencies
