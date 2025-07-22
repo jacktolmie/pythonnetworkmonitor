@@ -15,13 +15,13 @@ class Host(models.Model):
 
 # Results of the pings on the host.
 class PingHost(models.Model):
-    host =          models.ForeignKey(Host, on_delete=models.CASCADE, related_name='ping_results', help_text="The host this ping result belongs to.")
+    host =          models.ForeignKey(Host, on_delete=models.CASCADE, related_name='ping_results', null=True, blank=True, help_text="The host this ping result belongs to.")
     min_rtt =       models.FloatField(null=True, blank=True)
     max_rtt =       models.FloatField(null=True, blank=True)
     avg_rtt =       models.FloatField(null=True, blank=True)
     packet_loss =   models.IntegerField(null=True, blank=True)
     timestamp =     models.DateTimeField(auto_now_add=True)
-    was_successful =models.BooleanField(null=False, blank=True)
+    was_successful= models.BooleanField(null=False, blank=True)
     last_downtime = models.DateTimeField(null=True, blank=True)
 
 
@@ -31,5 +31,5 @@ class PingHost(models.Model):
         return f"{self.host.name} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')} - {status} ({ping_val})"
 
 
-class Meta:
+    class Meta:
         ordering = ["-timestamp"]
