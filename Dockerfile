@@ -14,7 +14,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies needed for the entrypoint script
-RUN apk add --no-cache netcat-openbsd
+RUN apt-get update && apt-get install -y netcat
+#RUN apk add --no-cache netcat-openbsd
 
 # Copy requirements.txt and install Python dependencies
 # This step is done separately to leverage Docker caching,
