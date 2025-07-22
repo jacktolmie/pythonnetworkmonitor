@@ -34,6 +34,14 @@ EXPOSE 8000
 # as part of an entrypoint script or manually if static files are served by Nginx later.
 # For now, we'll keep the CMD simple to start Gunicorn.
 
+# Copy the entrypoint script into the container
+COPY ./entrypoint.sh /app/entrypoint.sh
+# Make it executable inside the container
+RUN chmod +x /app/entrypoint.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
+
 # Define the command to run the Gunicorn server
 # Make sure to bind to 0.0.0.0 for container networking
 # Use your main project's wsgi.py
