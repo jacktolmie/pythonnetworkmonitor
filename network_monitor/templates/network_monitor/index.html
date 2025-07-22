@@ -242,7 +242,6 @@
                 });
 
             } catch (error) {
-                console.error('Error fetching monitored hosts:', error);
                 tableBody.innerHTML = '<tr><td colspan="7" class="py-4 text-center text-red-500">Failed to load hosts. Please check console for details.</td></tr>';
             }
         }
@@ -268,7 +267,6 @@
                     displayMessage('message-area', `Failed to update frequency: ${data.error}`, true, 10000);
                 }
             } catch (error) {
-                console.error('Error updating ping frequency:', error);
                 displayMessage('message-area', 'An error occurred while updating frequency.', true, 10000);
             }
         }
@@ -295,7 +293,6 @@
                     displayMessage('message-area', `Failed to delete target: ${data.message}`, true, 5000);
                 }
             } catch (error) {
-                console.error('Error deleting target:', error);
                 displayMessage('message-area', 'An error occurred while deleting target.', true, 5000);
             }
         }
@@ -370,7 +367,6 @@
                         pingOutputDiv.className = 'ping-output-box p-4 text-sm text-red-500';
                     }
                 } catch (error) {
-                    console.error('Error during ping request:', error);
                     pingOutputDiv.textContent = `An error occurred: ${error.message}`;
                     pingOutputDiv.className = 'ping-output-box p-4 text-sm text-red-500';
                 }
@@ -412,7 +408,6 @@
                         displayMessage('message-area', `Error: ${errorMessage}`, true, 10000);
                     }
                 } catch (error) {
-                    console.error('Error adding monitor target:', error);
                     displayMessage('message-area', `An error occurred: ${error.message}`, true, 10000);
                 }
             });
