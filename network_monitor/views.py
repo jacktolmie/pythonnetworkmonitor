@@ -26,7 +26,7 @@ def ping_host_api(request):
     if not host:
         return HttpResponseBadRequest("Host parameter is required.")
 
-    ping_result =       pingnode.ping_node(host, num_pings)
+    ping_result =       ping_node.ping_node(host, num_pings)
     ping_successful =   not("Could not" in ping_result)
 
     return JsonResponse({
