@@ -47,7 +47,6 @@ def get_results(sent_address: str, hostname: str = "Node",  num_pings: int = 5) 
 
     # If IP not pingable, return get_data string
     if get_data.startswith("Could"):
-        # print(get_data)
         return get_data, False
 
     # os = sys.platform
@@ -62,14 +61,12 @@ def get_results(sent_address: str, hostname: str = "Node",  num_pings: int = 5) 
             results = re.search(pattern, get_data)
             if results:
                 packets_lost, min_ping, avg_ping, max_ping = results.groups()
-                #print(results)
 
         case "win32":
             pattern = r"Lost = \d+ \((\d+\.?\d*)[\s()0-9a-zA-Z%,-:=]+Minimum = (\d+)[a-zA-z, =]+(\d+)[a-zA-z, =]+(\d+)"
             results = re.search(pattern, win)
             if results:
                 packets_lost, min_ping, max_ping, avg_ping = results.groups()
-                #print(results)
 
         case _:
             return "Invalid Operating System", False

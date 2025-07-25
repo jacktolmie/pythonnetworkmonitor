@@ -117,9 +117,12 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/pycharm
 
 # Added by Jack
+main.py
 Notes/
 .env
 __pycache__/
 modules/__pycache__/
 network_monitor/__pycache__/
-
+pythonnetworkmonitor/__pycache__/
+.venv/
+venv/

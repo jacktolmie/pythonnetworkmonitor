@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 
+from pythonnetworkmonitor.celery import app
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -33,7 +35,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "network_monitor",
     "rest_framework",
-    "rest_framework_simplejwt"
+    "rest_framework_simplejwt",
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -103,3 +106,27 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# --- CELERY SETTINGS ---
+
+app.autodiscover_tasks()
+
+# This uses the REDIS_URL from your .env file
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# --- CELERY BEAT SETTINGS ---
+# This tells Celery Beat to use the Django database to store its schedule
+CELERY_BEAT_SCHEDULE = {
+    'ping-hosts-every-interval': {
+        'task': 'network_monitor.tasks.schedule_tasks.ping_hosts',
+        'schedule': 30.0,
+        'args': (),
+    },
+}
+

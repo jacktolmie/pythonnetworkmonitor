@@ -13,6 +13,31 @@ services:
       - .env
     depends_on:
       - db
+      - redis
+
+  worker:
+    build: .
+    # The command to start a celery worker
+    command: celery -A pythonnetworkmonitor worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  beat:
+    build: .
+    # The command to start celery beat
+    command: celery -A pythonnetworkmonitor beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
 
   db:
     image: postgres:16-alpine
@@ -20,6 +45,9 @@ services:
       - pnm_data:/var/lib/postgresql/data/
     env_file:
       - .env
+
+  redis:
+    image: redis:7-alpine
 
 volumes:
   pnm_data:
