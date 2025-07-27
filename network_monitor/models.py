@@ -11,7 +11,8 @@ class Host(models.Model):
     added_date =        models.DateTimeField(auto_now_add=True, help_text="The date and time this host was added.")
     ping_interval =     models.IntegerField(null=True, default=60, blank=True, help_text="How many seconds between pings.")
     is_currently_down = models.BooleanField(default=False, help_text="True if the host is currently detected as down.")
-    last_ping_time =    models.DateTimeField(null=True, blank=True, help_text="The last time this host was last ping.")
+    last_ping_attempt = models.DateTimeField(null=True, blank=True, help_text="The last time this host was last ping.")
+    last_down_time =    models.DateTimeField(null=True, blank=True, help_text="The last time this host was last down.")
 
     def __str__(self):
         return f"{self.name} ({self.ip_address})"
@@ -50,12 +51,7 @@ class HostDowntimeEvent(models.Model):
     reason =        models.CharField(max_length=255, null=True, blank=True,
                               help_text="Optional reason for downtime (e.g., 'network outage', 'server restart').")
 
-    # confirmed_by =  models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        if self.start_time and self.end_time and not self.duration:
-            self.duration = self.end_time - self.start_time
-        super().save(*args, **kwargs)
+    # confirmed_by =  models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True) # Add later if wanted.
 
     def __str__(self):
         if self.end_time:

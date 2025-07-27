@@ -1,5 +1,6 @@
 import os
 import django
+from celery import shared_task
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pythonnetworkmonitor.settings')
 django.setup()
@@ -7,6 +8,7 @@ django.setup()
 from modules import ping_node, check_args
 from modules.save_ping_results import save_ping_results
 
+@shared_task
 def get_host_info(hostname: str, host_ip: str, save: bool, num_pings: int = 5) -> tuple[str, str]:
     # Strip off any whitespace.
     hostname =  hostname.strip()

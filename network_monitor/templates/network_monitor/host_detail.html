@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Details: {{ host.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .card {
+            @apply bg-white p-6 rounded-xl shadow-lg;
+        }
+        .btn-back {
+            @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-indicator.success { background-color: #48bb78; } /* Green */
+        .status-indicator.failure { background-color: #ef4444; } /* Red */
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">Host Details: {{ host.name }}</h1>
+
+        <div class="mb-8 text-center">
+            <a href="/monitor" class="btn-back">← Back to Dashboard</a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="card">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Host Information</h2>
+                <p><strong>Name:</strong> {{ host.name }}</p>
+                <p><strong>IP Address:</strong> {{ host.ip_address }}</p>
+                <p><strong>Description:</strong> {{ host.description|default:"N/A" }}</p>
+                <p><strong>Monitoring Status:</strong> {{ host.is_active|yesno:"Active,Inactive" }}</p>
+                <p><strong>Current State:</strong> {{ host.is_currently_down|yesno:"Down,Up" }}</p>
+                <p><strong>Ping Interval:</strong> {{ host.ping_interval }} seconds</p>
+                <p><strong>Added Date:</strong> {{ host.added_date|date:"Y-m-d H:i:s" }}</p>
+                <p><strong>Last Ping Time:</strong> {{ host.last_ping_time|date:"Y-m-d H:i:s"|default:"N/A" }}</p>
+            </div>
+
+            <div class="card">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Summary Statistics</h2>
+                <p><strong>Average Ping Speed (Successful):</strong> {{ avg_ping_speed }}</p>
+                <p><strong>Total Downtime Events:</strong> {{ total_downtime_events }}</p>
+                <p><strong>Total Downtime Duration:</strong> {{ total_downtime_duration }}</p>
+                {# You can add more summary stats here, e.g., uptime percentage for a period #}
+            </div>
+        </div>
+
+        <div class="card mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Recent Ping Results</h2>
+            {% if recent_pings %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Timestamp</th>
+                                <th class="py-3 px-6 text-left">Status</th>
+                                <th class="py-3 px-6 text-left">Avg RTT (ms)</th>
+                                <th class="py-3 px-6 text-left">Packet Loss (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-700 text-sm font-light">
+                            {% for ping in recent_pings %}
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6 text-left">{{ ping.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                    <td class="py-3 px-6 text-left">
+                                        <span class="status-indicator {% if ping.was_successful %}success{% else %}failure{% endif %}"></span>
+                                        {{ ping.was_successful|yesno:"Successful,Failed" }}
+                                    </td>
+                                    <td class="py-3 px-6 text-left">{{ ping.avg_rtt|default:"N/A" }}</td>
+                                    <td class="py-3 px-6 text-left">{{ ping.packet_loss|default:"N/A" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No recent ping results available for this host.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Recent Downtime Events</h2>
+            {% if recent_downtime_events %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Start Time</th>
+                                <th class="py-3 px-6 text-left">End Time</th>
+                                <th class="py-3 px-6 text-left">Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-700 text-sm font-light">
+                            {% for event in recent_downtime_events %}
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6 text-left">{{ event.start_time|date:"Y-m-d H:i:s" }}</td>
+                                    <td class="py-3 px-6 text-left">{{ event.end_time|date:"Y-m-d H:i:s"|default:"(Ongoing)" }}</td>
+                                    <td class="py-3 px-6 text-left">{{ event.duration|default:"(Still Down)" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No recent downtime events recorded for this host.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

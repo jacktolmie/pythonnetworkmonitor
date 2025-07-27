@@ -21,31 +21,35 @@ def save_ping_results(hostname: str, host_ip: str, data: list[int], was_successf
             ping_result = PingHost.objects.create(host=host_object, was_successful=was_successful)
             ping_result.was_successful = was_successful
             ping_result.timestamp = timezone.now()
+            host_object.last_ping_attempt = timezone.now()
 
             if was_successful:
                 ping_result.packet_loss =   data[0]
                 ping_result.min_rtt =       data[1]
                 ping_result.max_rtt =       data[2]
                 ping_result.avg_rtt =       data[3]
-                host_object.last_ping_time = timezone.now()
+                host_object.last_ping_attempt = timezone.now()
 
                 if host_object.is_currently_down:
                     host_object.is_currently_down = False
-                    host_object.last_ping_time =    timezone.now()
+
+                    # Get a list of hosts that do not have the end_time and duration filled in.
                     get_host_downtime =             HostDowntimeEvent.objects.\
                             filter(host=host_object, end_time__isnull=True).reverse()
                     if get_host_downtime.exists():
                         for hosts in get_host_downtime:
+                            # For each host, get current time, and subtract it from the start of downtime.
                             hosts.end_time = timezone.now()
+                            hosts.duration = hosts.end_time - hosts.start_time
                             hosts.save()
 
             else:
                 if not host_object.is_currently_down:
                     ping_result.last_downtime =     timezone.now()
                     host_object.is_currently_down = True
+                    host_object.last_down_time = timezone.now()
                     HostDowntimeEvent.objects.create(host=host_object, start_time=timezone.now()).save()
 
-            # Save the results to the database.
             ping_result.save()
             host_object.save()
 

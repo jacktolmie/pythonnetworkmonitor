@@ -1,7 +1,6 @@
 # network_monitor/tasks/ping_tasks.py
 from celery import shared_task
 from django.utils import timezone
-from datetime import timedelta
 from network_monitor.models import Host, PingHost, HostDowntimeEvent # Use full path if needed, or relative import
 
 @shared_task
@@ -29,7 +28,7 @@ def ping_single_host(host_id):
         )
 
         if ping_successful:
-            host.last_ping_time = timezone.now()
+            host.last_ping_attempt = timezone.now()
             if host.is_currently_down:
                 active_downtime = HostDowntimeEvent.objects.filter(host=host, end_time__isnull=True).order_by('-start_time').first()
                 if active_downtime:
@@ -38,7 +37,7 @@ def ping_single_host(host_id):
                     print(f"Host {host.name} is back up. Downtime ended at {active_downtime.end_time}")
                 host.is_currently_down = False
             host.save()
-            print(f"Successfully pinged {host.name} at {host.last_ping_time}")
+            print(f"Successfully pinged {host.name} at {host.last_ping_attempt}")
         else:
             print(f"Failed to ping {host.name}. Result: {ping_result_data}")
             if not host.is_currently_down:

@@ -1,11 +1,11 @@
 # network_monitor/tasks/schedule_tasks.py
 from celery import shared_task
 from django.utils import timezone
-from datetime import timedelta
-from network_monitor.models import Host, PingHost
+from network_monitor.models import Host
 
 # Import the specific task from the other file within the tasks package
 from .ping_tasks import ping_single_host
+from modules.get_host_info import get_host_info
 
 @shared_task
 def ping_hosts():
@@ -13,13 +13,15 @@ def ping_hosts():
     active_hosts = Host.objects.filter(is_active=True)
 
     for host in active_hosts:
-        if host.last_ping_time:
-            time_since_last_ping = now - host.last_ping_time
+        if host.last_ping_attempt:
+            time_since_last_ping = now - host.last_ping_attempt
             if time_since_last_ping.total_seconds() >= host.ping_interval:
                 print(f"Host {host.name} is due for a ping. Scheduling task...")
-                ping_single_host.delay(host.name)
-            else:
-                remaining_time = host.ping_interval - time_since_last_ping.total_seconds()
+                # ping_single_host.delay(host.name)
+                # ping_single_host.delay(get_host_info(hostname= host.name, host_ip=host.ip_address, save=True, num_pings=2))
+                get_host_info.delay(hostname= host.name, host_ip=host.ip_address, save=True, num_pings=2)
+            # else:
+            #     remaining_time = host.ping_interval - time_since_last_ping.total_seconds()
 
         else:
             print(f"Host {host.name} never pinged. Scheduling initial ping...")
