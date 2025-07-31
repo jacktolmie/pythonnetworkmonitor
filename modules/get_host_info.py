@@ -9,7 +9,7 @@ from modules import ping_node, check_args
 from modules.save_ping_results import save_ping_results
 
 @shared_task
-def get_host_info(hostname: str, host_ip: str, save: bool, num_pings: int = 5) -> tuple[str, str]:
+def get_host_info(hostname: str, host_ip: str, save: bool, description: str = "Node", num_pings: int = 5) -> tuple[str, str]:
     # Strip off any whitespace.
     hostname =  hostname.strip()
     host_ip =   host_ip.strip()
@@ -28,7 +28,7 @@ def get_host_info(hostname: str, host_ip: str, save: bool, num_pings: int = 5) -
             ping_results, is_active = ping_node.get_results(host_ip, hostname, num_pings)
 
             # Add host to database.
-            add_result = save_ping_results(hostname, host_ip, ping_results, is_active)
+            add_result = save_ping_results(hostname, host_ip, description , ping_results, is_active)
             return ("success", add_result[1]) if add_result[0] else ("failure", add_result[1])
 
         else :

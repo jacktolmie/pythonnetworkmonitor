@@ -17,7 +17,7 @@ def api_get_monitored_hosts(request):
         # Add info for full monitoring webpage for each node.
         hosts_data.append({
             'id': target.id,
-            'target_string': target.description,
+            'description': target.description,
             'resolved_ip': target.ip_address,
             'hostname': target.name,
             'is_active': target.is_active,

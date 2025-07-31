@@ -1,7 +1,9 @@
 # network_monitor/tasks/ping_tasks.py
 from celery import shared_task
 from django.utils import timezone
-from network_monitor.models import Host, PingHost, HostDowntimeEvent # Use full path if needed, or relative import
+
+from modules.api_ping_host import api_ping_host
+from network_monitor.models import Host, PingHost, HostDowntimeEvent
 
 @shared_task
 def ping_single_host(host_id):
@@ -14,7 +16,7 @@ def ping_single_host(host_id):
         target = host.ip_address if host.ip_address else host.name
         print(f"Initiating ping for host: {host.name} ({target})")
 
-        ping_result_data = pingget_ping(target)
+        ping_result_data = api_ping_host(target)
         ping_successful = ping_result_data.get('status') == 'success'
 
         PingHost.objects.create(

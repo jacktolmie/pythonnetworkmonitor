@@ -5,16 +5,20 @@ from network_monitor.models import Host, PingHost, HostDowntimeEvent
 
 
 # This function creates or checks for existing host in the database, and saves ping results.
-def save_ping_results(hostname: str, host_ip: str, data: list[int], was_successful: bool) -> tuple[bool, str]:
+def save_ping_results(hostname: str, host_ip: str, description: str, data: list[int], was_successful: bool) -> tuple[bool, str]:
 
     try:
         with (transaction.atomic()):
             # Check if host exists already, or creates a new one in the database Host table.
-            host_object, created = Host.objects.get_or_create(name=hostname, defaults={'ip_address':host_ip})
+            host_object, created = Host.objects.get_or_create(name=hostname,
+                                    defaults={'ip_address':host_ip, 'description':description})
 
             # Check if the IP address changed if the host exists.
-            if not created and host_object.ip_address != host_ip:
-                host_object.ip_address = host_ip
+            if not created:
+                if host_object.ip_address != host_ip:
+                    host_object.ip_address = host_ip
+                if host_object.name != hostname:
+                    host_object.name = hostname
                 host_object.save()
 
             # Adds results to the database PingHost table.

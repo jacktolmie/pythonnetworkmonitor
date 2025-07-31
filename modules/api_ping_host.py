@@ -7,7 +7,7 @@ from modules import ping_node
 def api_ping_host(request):
     try:
         data = json.loads(request.body)
-        host = data['host']
+        host = data.get('host')
         num_pings = data.get('num_pings', 5)
     except json.JSONDecodeError:
         return HttpResponseBadRequest("Invalid JSON")

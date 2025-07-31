@@ -1,0 +1,52 @@
+/* CSS file for host_detail.html */
+
+@import "constants.css";
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f4f8;
+}
+
+.card {
+    @apply bg-white p-6 rounded-xl shadow-lg;
+}
+
+.btn-back {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-indicator.success {
+    background-color: #48bb78;
+}
+
+/* Green */
+.status-indicator.failure {
+    background-color: #ef4444;
+}
+
+/* Red */
+
+.ping-interval-select {
+    @apply p-1 border border-gray-300 rounded-md text-sm;
+}
+
+/* ADDED/MODIFIED: CSS for the update-message span */
+#update-message {
+    opacity: 0;
+    transition: opacity var(--message-fade-duration) ease-out;
+    /*transition: opacity 0.5s ease-out; !* Smooth transition for opacity *!*/
+    display: none; /* Initially hide the element, so it takes no space */
+}
+
+#update-message.show {
+    opacity: 1;
+    display: inline-block; /* Or 'block' if you want it on its own line */
+}

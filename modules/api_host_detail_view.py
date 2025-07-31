@@ -1,5 +1,7 @@
 from django.db.models import Sum, Avg
 from django.shortcuts import render, get_object_or_404
+
+from modules.time_format import format_timedelta_to_hms
 from network_monitor.models import Host, PingHost, HostDowntimeEvent
 
 def api_host_detail_view(request, host_id):
@@ -8,7 +10,14 @@ def api_host_detail_view(request, host_id):
     # --- Fetching Ping Statistics ---
     # Get recent ping results (e.g., last 24 hours or last 100 pings)
     # You might want to pass a 'period' parameter from the frontend later
-    recent_pings = PingHost.objects.filter(host=host).order_by('-timestamp')[:100] # Last 100 pings
+    recent_pings = PingHost.objects.filter(host=host).order_by('-timestamp')[:10] # Last 10 pings
+
+    # Convert timestamps to iso format to be converted by format_utc_to_local.js
+    for ping in recent_pings:
+        ping.timestamp = ping.timestamp.isoformat()
+
+    if host.added_date:
+        host.added_date = host.added_date.isoformat()
 
     # Calculate average ping speed (avg_rtt) for successful pings
     avg_ping_speed = PingHost.objects.filter(
@@ -31,24 +40,31 @@ def api_host_detail_view(request, host_id):
     )['total_duration']
 
     # Format total_downtime_duration for display
-    if total_downtime_duration:
-        # total_seconds() returns float, convert to int for cleaner display
-        total_downtime_seconds = int(total_downtime_duration.total_seconds())
-        hours, remainder = divmod(total_downtime_seconds, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        formatted_duration = f"{hours}h {minutes}m {seconds}s"
-    else:
-        formatted_duration = "N/A"
+    formatted_total_duration = format_timedelta_to_hms(total_downtime_duration)
 
     # List of recent downtime events
-    recent_downtime_events = HostDowntimeEvent.objects.filter(host=host).order_by('-start_time')[:10] # Last 10 events
+    # recent_downtime_events = HostDowntimeEvent.objects.filter(host=host).order_by('-start_time')[:10] # Last 10 events
+    recent_downtime_events = HostDowntimeEvent.objects.filter(host=host).order_by('-start_time')[:10]
+    recent_downtime_events_data = []
 
+    for event in recent_downtime_events:
+        # Format individual event duration using the helper function
+        formatted_event_duration = format_timedelta_to_hms(event.duration) if event.duration else "(Still Down)"
+
+        recent_downtime_events_data.append(
+            {
+                'start_time': event.start_time.isoformat(),
+                'end_time': event.end_time.isoformat() if event.end_time else None,
+                'duration': formatted_event_duration,
+            }
+        )
     context = {
         'host': host,
         'avg_ping_speed': f"{avg_ping_speed:.2f} ms" if avg_ping_speed is not None else "N/A",
         'total_downtime_events': total_downtime_events,
-        'total_downtime_duration': formatted_duration,
+        'total_downtime_duration': formatted_total_duration,
         'recent_pings': recent_pings,
-        'recent_downtime_events': recent_downtime_events,
+        'recent_downtime_events_data': recent_downtime_events_data,
     }
+    # print(context)
     return render(request, 'network_monitor/host_detail.html', context)

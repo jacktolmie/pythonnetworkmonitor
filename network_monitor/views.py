@@ -40,4 +40,4 @@ def ping_host_api(request):
 
 @require_POST
 def update_ping_frequency_api(request):
-    return api_ping_host(request)
+    return api_update_ping_frequency(request)

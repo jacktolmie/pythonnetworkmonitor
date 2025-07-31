@@ -12,7 +12,7 @@ def api_update_ping_frequency(request):
 
         return JsonResponse({
             'success': True,
-            'message': f"Ping frequency for {hostname.name} updated to {hostname.ping_interval} minutes."
+            'message': f"Ping frequency for {hostname.name} updated to {int(hostname.ping_interval / 60)} minutes."
         })
 
     except json.JSONDecodeError:

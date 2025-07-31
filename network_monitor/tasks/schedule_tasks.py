@@ -17,11 +17,7 @@ def ping_hosts():
             time_since_last_ping = now - host.last_ping_attempt
             if time_since_last_ping.total_seconds() >= host.ping_interval:
                 print(f"Host {host.name} is due for a ping. Scheduling task...")
-                # ping_single_host.delay(host.name)
-                # ping_single_host.delay(get_host_info(hostname= host.name, host_ip=host.ip_address, save=True, num_pings=2))
-                get_host_info.delay(hostname= host.name, host_ip=host.ip_address, save=True, num_pings=2)
-            # else:
-            #     remaining_time = host.ping_interval - time_since_last_ping.total_seconds()
+                get_host_info.delay(hostname= host.name, host_ip=host.ip_address, description=host.description , save=True, num_pings=2)
 
         else:
             print(f"Host {host.name} never pinged. Scheduling initial ping...")

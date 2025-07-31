@@ -18,7 +18,7 @@ def api_add_monitor(request):
         return HttpResponseBadRequest("Host parameter is required.")
 
     # Call get_host_info with save=True to handle validation, ping, and DB interaction
-    result = get_host_info.get_host_info(hostname= host_input, host_ip= host_ip, save= True, num_pings= 2)
+    result = get_host_info.get_host_info(hostname= host_input, host_ip= host_ip, description= description, save= True, num_pings= 2)
 
     # Check result[0] ('success' or 'failure') for result of trying to add host.
     if result[0] == 'success':

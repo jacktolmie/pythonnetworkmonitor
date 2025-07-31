@@ -126,3 +126,6 @@ network_monitor/__pycache__/
 pythonnetworkmonitor/__pycache__/
 .venv/
 venv/
+.idea/prettier.xml
+celerybeat-schedule-shm
+celerybeat-schedule-wal

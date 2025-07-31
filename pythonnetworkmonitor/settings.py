@@ -21,7 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-53!@kxg_g&hx!ji6gx2js=$=r9qv_a)g(o!g*wficis0a#0m7*') # CHANGE THIS FOR PRODUCTION
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
 # Application definition
@@ -97,14 +96,19 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'America/Vancouver'
 
 USE_I18N = True
 
 USE_TZ = True
 
+
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [
+    BASE_DIR / 'network_monitor' / 'static',
+    # If you also have a project-level static folder (e.g., pythonnetworkmonitor/static/):
+    # BASE_DIR / 'static',
+]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

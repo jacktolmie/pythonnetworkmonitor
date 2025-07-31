@@ -1,0 +1,7 @@
+
+/* Message fade timeout. */
+:root {
+    --message-fade-duration: 0.5s; /* Define your fade duration here */
+    --message-display-duration_short: 3000ms; /* Defines how long the message stays if no error */
+    --message-display-duration_long: 10000ms; /* Defines how long the message stays if there is an error */
+}
