@@ -27,14 +27,15 @@ services:
       - db
       - redis
 
-  beat:
+  celery-beat:
     build: .
-    # The command to start celery beat
-    command: celery -A pythonnetworkmonitor beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    command: celery -A pythonnetworkmonitor beat -l info --scheduler django_celery_beat.schedulers.DatabaseScheduler
     volumes:
-      - .:/app
-    env_file:
-      - .env
+      - .:/code
+    environment:
+      - DJANGO_SETTINGS_MODULE=pythonnetworkmonitor.settings
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - db
       - redis
