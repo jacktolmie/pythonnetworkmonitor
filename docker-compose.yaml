@@ -3,8 +3,6 @@
 services:
   web:
     build: .
-    # The command is now in the Dockerfile's CMD, so we remove it from here.
-    # The entrypoint is also in the Dockerfile.
     volumes:
       - .:/app
     ports:
@@ -32,10 +30,8 @@ services:
     command: celery -A pythonnetworkmonitor beat -l info --scheduler django_celery_beat.schedulers.DatabaseScheduler
     volumes:
       - .:/code
-    environment:
-      - DJANGO_SETTINGS_MODULE=pythonnetworkmonitor.settings
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - .env
     depends_on:
       - db
       - redis
@@ -49,6 +45,9 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
 
 volumes:
   pnm_data:
