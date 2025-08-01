@@ -96,10 +96,6 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "static_collected"
 
-STATICFILES_DIRS = [
-    BASE_DIR / 'network_monitor' / 'static',
-]
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- CELERY SETTINGS ---
@@ -110,14 +106,16 @@ CELERY_RESULT_BACKEND = env('REDIS_URL')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
-CELERY_ENABLE_UTC = True # Always use UTC for Celery
+CELERY_TIMEZONE = 'UTC' # Using UTC is a best practice for Celery
+CELERY_ENABLE_UTC = True
 
 # --- CELERY BEAT SETTINGS ---
-CELERY_BEAT_SCHEDULE = {
-    'ping-hosts-every-interval': {
-        'task': 'network_monitor.tasks.schedule_tasks.ping_hosts',
-        'schedule': 30.0,
-        'args': (),
-    },
-}
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# CELERY_BEAT_SCHEDULE = {
+#     'ping-hosts-every-interval': {
+#         'task': 'network_monitor.tasks.schedule_tasks.ping_hosts',
+#         'schedule': 30.0,
+#         'args': (),
+#     },
+# }
