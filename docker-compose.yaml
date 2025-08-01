@@ -29,6 +29,7 @@ services:
     # This command now includes collectstatic as well.
     command: sh -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput"
     volumes:
+      - static_data:/app/static_root
       - .:/app
     env_file:
       - ./.env
@@ -48,15 +49,30 @@ services:
     # Use gunicorn for production instead of runserver for better performance.
     command: gunicorn pythonnetworkmonitor.wsgi:application --bind 0.0.0.0:8000
     volumes:
+      - static_data:/app/static_root
       - .:/app
-    ports:
-      - "8000:8000"
+#    ports:
+#      - "8000:8000"
     env_file:
       - ./.env
     depends_on:
       migrate:
         # This is the key: it waits for the 'migrate' service to complete.
         condition: service_completed_successfully
+
+  nginx:
+      build:
+        context: .
+        dockerfile: Dockerfile.nginx
+      ports:
+        # Expose port 80 to the world
+        - "80:80"
+      volumes:
+        # Nginx needs to read from the shared static volume
+        - static_data:/app/static_root
+      depends_on:
+        - web
+
 
   worker:
     build: .
@@ -84,3 +100,4 @@ services:
 
 volumes:
   pnm_data:
+  static_data:
