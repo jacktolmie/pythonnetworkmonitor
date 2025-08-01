@@ -124,6 +124,7 @@ __pycache__/
 modules/__pycache__/
 network_monitor/__pycache__/
 pythonnetworkmonitor/__pycache__/
+network_monitor/migrations/__pycache__/
 .venv/
 venv/
 .idea/prettier.xml
