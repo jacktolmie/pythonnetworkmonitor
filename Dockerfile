@@ -26,6 +26,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire project into the container
 COPY . /app/
 
+RUN python manage.py collectstatic --noinput
+
 # Expose the port your Django application will run on
 EXPOSE 8000
 
