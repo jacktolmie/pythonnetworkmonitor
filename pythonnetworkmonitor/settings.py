@@ -94,6 +94,8 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "static_collected"
+
 STATICFILES_DIRS = [
     BASE_DIR / 'network_monitor' / 'static',
 ]
