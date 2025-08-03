@@ -1,0 +1,13 @@
+<!--This is for each row in the for loop in the host_detail.html -->
+<!--page in the { for event in recent_downtime_events_data } section-->
+<tr class="border-b border-gray-200 hover:bg-gray-100">
+    <td class="py-3 px-6 text-left"><span class="js-local-datetime" data-utc-datetime="{{ event.start_time }}"></span></td>
+    <td class="py-3 px-6 text-left">
+        {% if event.end_time %}
+        <span class="js-local-datetime" data-utc-datetime="{{ event.end_time }}"></span>
+        {% else %}
+        (Ongoing)
+        {% endif %}
+    </td>
+    <td class="py-3 px-6 text-left">{{ event.duration|default:"(Still Down)" }}</td>
+</tr>

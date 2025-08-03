@@ -182,6 +182,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 if (data.error) {
                     pingOutputDiv.textContent += `\nError: ${data.error}`;
                 }
+                document.getElementById('pingClearButton').style.display = 'block';
             } else {
                 pingOutputDiv.textContent = `Error: ${data.error}`;
                 pingOutputDiv.className = 'ping-output-box p-4 text-sm text-red-500';
@@ -195,6 +196,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Event Listener for Clear Output Button
     clearButton.addEventListener('click', async () => {
         pingOutput.textContent = 'Awaiting ping request';
+        pingOutput.classList.remove('text-red-600');
+        pingOutput.classList.add('text-green-600');
+        document.getElementById('pingClearButton').style.display = 'none';
     });
 
     // Event Listener for Add Monitor Button
@@ -266,5 +270,5 @@ document.addEventListener('DOMContentLoaded', async function () {
     await fetchAndRenderHosts();
 
     // Periodically refresh the monitored hosts list
-    setInterval(fetchAndRenderHosts, refresh_monitored_list); // Refresh every 10 seconds
+    setInterval(fetchAndRenderHosts, refresh_monitored_list); // Set from constants.js file
 });

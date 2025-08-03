@@ -12,13 +12,14 @@ def save_ping_results(hostname: str, host_ip: str, description: str, data: list[
             # Check if host exists already, or creates a new one in the database Host table.
             host_object, created = Host.objects.get_or_create(name=hostname,
                                     defaults={'ip_address':host_ip, 'description':description})
-
             # Check if the IP address changed if the host exists.
             if not created:
                 if host_object.ip_address != host_ip:
                     host_object.ip_address = host_ip
                 if host_object.name != hostname:
                     host_object.name = hostname
+                if host_object.description != description:
+                    host_object.description = description
                 host_object.save()
 
             # Adds results to the database PingHost table.
@@ -26,7 +27,6 @@ def save_ping_results(hostname: str, host_ip: str, description: str, data: list[
             ping_result.was_successful = was_successful
             ping_result.timestamp = timezone.now()
             host_object.last_ping_attempt = timezone.now()
-
             if was_successful:
                 ping_result.packet_loss =   data[0]
                 ping_result.min_rtt =       data[1]
@@ -48,10 +48,12 @@ def save_ping_results(hostname: str, host_ip: str, description: str, data: list[
                             hosts.save()
 
             else:
+                ping_result.packet_loss = 100
                 if not host_object.is_currently_down:
                     ping_result.last_downtime =     timezone.now()
                     host_object.is_currently_down = True
-                    host_object.last_down_time = timezone.now()
+                    host_object.last_down_time =    timezone.now()
+
                     HostDowntimeEvent.objects.create(host=host_object, start_time=timezone.now()).save()
 
             ping_result.save()

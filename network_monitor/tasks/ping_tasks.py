@@ -19,7 +19,7 @@ def ping_single_host(host_id):
         ping_result_data = api_ping_host(target)
         ping_successful = ping_result_data.get('status') == 'success'
 
-        PingHost.objects.create(
+        PingHost.objects.get_or_create(
             host=host,
             min_rtt=ping_result_data.get('min_rtt'),
             max_rtt=ping_result_data.get('max_rtt'),

@@ -27,6 +27,9 @@ def api_host_detail_view(request, host_id):
         avg_rtt=Avg('avg_rtt')
     )['avg_rtt']
 
+    # min_ping_speed = PingHost.min_rtt
+    # max_ping_speed = PingHost.max_rtt
+    # packet_loss = PingHost.packet_loss
     # --- Fetching Downtime Statistics ---
     # Total number of downtime events
     total_downtime_events = HostDowntimeEvent.objects.filter(host=host).count()
@@ -65,6 +68,7 @@ def api_host_detail_view(request, host_id):
         'total_downtime_duration': formatted_total_duration,
         'recent_pings': recent_pings,
         'recent_downtime_events_data': recent_downtime_events_data,
+        # 'packet_loss': packet_loss,
     }
     # print(context)
     return render(request, 'network_monitor/host_detail.html', context)

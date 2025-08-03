@@ -61,21 +61,13 @@
                             <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
                                 <th class="py-3 px-6 text-left">Timestamp</th>
                                 <th class="py-3 px-6 text-left">Status</th>
-                                <th class="py-3 px-6 text-left">Avg RTT (ms)</th>
+                                <th class="py-3 px-6 text-left">Min / Max / Avg RTT (ms)</th>
                                 <th class="py-3 px-6 text-left">Packet Loss (%)</th>
                             </tr>
                         </thead>
                         <tbody class="text-gray-700 text-sm font-light">
                             {% for ping in recent_pings %}
-                                <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                    <td class="py-3 px-6 text-left"><span class="js-local-datetime" data-utc-datetime="{{ ping.timestamp }}"></span></td>
-                                    <td class="py-3 px-6 text-left">
-                                        <span class="status-indicator {% if ping.was_successful %}success{% else %}failure{% endif %}"></span>
-                                        {{ ping.was_successful|yesno:"Successful,Failed" }}
-                                    </td>
-                                    <td class="py-3 px-6 text-left">{{ ping.avg_rtt|default:"N/A" }}</td>
-                                    <td class="py-3 px-6 text-left">{{ ping.packet_loss|default:"N/A" }}</td>
-                                </tr>
+                                {% include 'network_monitor/host_detail_ping.html' %}
                             {% endfor %}
                         </tbody>
                     </table>
@@ -99,17 +91,7 @@
                         </thead>
                         <tbody class="text-gray-700 text-sm font-light">
                             {% for event in recent_downtime_events_data %}
-                                <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                    <td class="py-3 px-6 text-left"><span class="js-local-datetime" data-utc-datetime="{{ event.start_time }}"></span></td>
-                                    <td class="py-3 px-6 text-left">
-                                        {% if event.end_time %}
-                                            <span class="js-local-datetime" data-utc-datetime="{{ event.end_time }}"></span>
-                                        {% else %}
-                                            (Ongoing)
-                                        {% endif %}
-                                    </td>
-                                    <td class="py-3 px-6 text-left">{{ event.duration|default:"(Still Down)" }}</td>
-                                </tr>
+                                {% include 'network_monitor/host_detail_downtime.html' %}
                             {% endfor %}
                         </tbody>
                     </table>
