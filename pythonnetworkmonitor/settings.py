@@ -1,7 +1,7 @@
 """
 Django settings for pythonnetworkmonitor project.
 """
-
+from datetime import timedelta
 from pathlib import Path
 import os
 
@@ -111,5 +111,13 @@ CELERY_TIMEZONE = 'UTC'
 CELERY_ENABLE_UTC = True
 
 # --- CELERY BEAT SETTINGS ---
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-
+# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULE = {
+    # The name of the task entry.
+    'ping_hosts_every_minute': {
+        # The exact import path to your task.
+        'task': 'network_monitor.tasks.schedule_tasks.ping_hosts',
+        # The frequency for running the task.
+        'schedule': timedelta(minutes=1),
+    },
+}

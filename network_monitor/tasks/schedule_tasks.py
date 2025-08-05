@@ -1,10 +1,9 @@
 # network_monitor/tasks/schedule_tasks.py
 from celery import shared_task
 from django.utils import timezone
-from network_monitor.models import Host
 
-# Import the specific task from the other file within the tasks package
-from .ping_tasks import ping_single_host
+from network_monitor.models import Host
+from network_monitor.tasks.ping_tasks import ping_single_host
 from modules.get_host_info import get_host_info
 
 @shared_task
