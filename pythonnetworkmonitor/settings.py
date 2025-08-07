@@ -99,8 +99,6 @@ STATIC_ROOT = BASE_DIR / "static_"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- CELERY SETTINGS ---
-# CELERY_BROKER_URL = env('REDIS_URL')
-# CELERY_RESULT_BACKEND = env('REDIS_URL')
 CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/0')
 CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/0')
 
@@ -111,13 +109,18 @@ CELERY_TIMEZONE = 'UTC'
 CELERY_ENABLE_UTC = True
 
 # --- CELERY BEAT SETTINGS ---
-# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_BEAT_SCHEDULE = {
-    # The name of the task entry.
+    # Task schedule to ping the hosts
     'ping_hosts_every_minute': {
         # The exact import path to your task.
         'task': 'network_monitor.tasks.schedule_tasks.ping_hosts',
         # The frequency for running the task.
         'schedule': timedelta(minutes=1),
+    },
+    # Task schedule to clean up the database.
+    'delete_old_monitoring_data_daily': {
+        'task': 'network_monitor.tasks.cleanup_tasks.delete_old_data',
+        # Run once every 24 hours (daily)
+        'schedule': timedelta(hours=24),
     },
 }

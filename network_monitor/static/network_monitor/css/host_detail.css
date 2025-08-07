@@ -43,10 +43,63 @@ body {
     opacity: 0;
     transition: opacity var(--message-fade-duration) ease-out;
     /*transition: opacity 0.5s ease-out; !* Smooth transition for opacity *!*/
-    display: none; /* Initially hide the element, so it takes no space */
+    display: none;
 }
 
 #update-message.show {
     opacity: 1;
-    display: inline-block; /* Or 'block' if you want it on its own line */
+    display: inline-block;
+}
+
+#delete-data-message {
+    opacity: 0;
+    transition: opacity var(--message-fade-duration) ease-out;
+    display: none;
+}
+#delete-data-message.show {
+    opacity: 1;
+    display: inline-block;
+}
+
+.scroll-tbody {
+    display: block;
+    max-height: 300px;
+    overflow-y: auto;
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* This is a crucial step to align the columns correctly */
+.scroll-tbody tr {
+    display: inline-table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+/* Optional: This can help with header alignment, especially if columns have different widths */
+.scroll-tbody td,
+.scroll-tbody th {
+    width: 25%; /* Adjust widths to match your table headers */
+
+}
+
+/* Ensure the header also behaves like a block element for alignment */
+table thead,
+table tbody {
+    display: table;
+    width: 100%;
+}
+
+/* This is a crucial step to align the columns correctly */
+.scrollable-table {
+    width: 100%;
+    table-layout: fixed; /* Forces columns to be the same width */
+}
+
+/* Ensure both headers and data cells have the same width */
+.scrollable-table th,
+.scrollable-table td {
+    width: 25%; /* Adjust this percentage based on the number of columns you have */
+    padding: 8px; /* Add some padding for better readability */
+    text-align: left; /* Aligns the text to the left */
 }

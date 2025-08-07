@@ -4,9 +4,9 @@
     <td class="py-3 px-6 text-left"><span class="js-local-datetime" data-utc-datetime="{{ event.start_time }}"></span></td>
     <td class="py-3 px-6 text-left">
         {% if event.end_time %}
-        <span class="js-local-datetime" data-utc-datetime="{{ event.end_time }}"></span>
+            <span class="js-local-datetime" data-utc-datetime="{{ event.end_time }}"></span>
         {% else %}
-        (Ongoing)
+            (Ongoing)
         {% endif %}
     </td>
     <td class="py-3 px-6 text-left">{{ event.duration|default:"(Still Down)" }}</td>

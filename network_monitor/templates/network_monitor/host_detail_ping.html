@@ -1,12 +1,13 @@
 <!--This is for each row in the for loop in the host_detail.html
     page in the { for ping in recent_pings } section-->
 <tr class="border-b border-gray-200 hover:bg-gray-100">
-    <td class="py-3 px-6 text-left"><span class="js-local-datetime" data-utc-datetime="{{ ping.timestamp }}"></span></td>
+    <td class="py-3 px-6 text-left">
+        <span class="js-local-datetime" data-utc-datetime="{{ ping.timestamp }}"></span>
+    </td>
     <td class="py-3 px-6 text-left">
         <span class="status-indicator {% if ping.was_successful %}success{% else %}failure{% endif %}"></span>
         {{ ping.was_successful|yesno:"Successful,Failed" }}
     </td>
     <td class="py-3 px-6 text-left">{{ ping.min_rtt |default:"N/A"}} / {{ ping.max_rtt|default:"N/A" }} / {{ ping.avg_rtt|default:"N/A" }}</td>
     <td class="py-3 px-6 text-left">{{ ping.packet_loss|default:"N/A" }}</td>
-<!--    <script> console.log({{ ping.packet_loss }})</script>-->
 </tr>

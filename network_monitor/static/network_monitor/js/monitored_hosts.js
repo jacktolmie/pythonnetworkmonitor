@@ -22,13 +22,13 @@ async function fetchAndRenderHosts() {
     }
 
     try {
-        const response = await fetch('/monitor/api/hosts/'); // Your Django API URL
+        const response = await fetch('/monitor/api/hosts/');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json(); // Assuming your API returns { "hosts": [...] }
 
-        tableBody.innerHTML = ''; // Clear existing rows
+        tableBody.innerHTML = '';
 
         if (data.host && data.host.length === 0) {
             tableBody.innerHTML = '<tr><td colspan="8" class="py-4 text-center text-gray-500">No hosts currently being monitored. Add one above!</td></tr>'; // Updated colspan
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCsrfToken() // Include CSRF token
+                    'X-CSRFToken': getCsrfToken()
                 },
                 body: JSON.stringify({host: host, num_pings: numPings})
             });

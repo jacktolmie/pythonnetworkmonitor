@@ -11,6 +11,9 @@ def api_delete_monitor_target(request):
 
         get_host_obj = Host.objects.get(id = host_id)
         host_name = get_host_obj.name
+
+        # These variables are unused. Just keeping them if needed later.
+        # This will delete the host from the database.
         deleted_host, details = get_host_obj.delete()
 
         return JsonResponse({

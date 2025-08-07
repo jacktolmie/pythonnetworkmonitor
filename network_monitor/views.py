@@ -7,6 +7,7 @@ from modules.api_get_monitored_host import api_get_monitored_hosts
 from modules.api_host_detail_view import api_host_detail_view
 from modules.api_ping_host import api_ping_host
 from modules.api_update_ping_frequency import api_update_ping_frequency
+from modules.api_delete_host_data import api_delete_host_data
 
 # Adds a new target to be monitored.
 # Uses get_host_info with save=True.
@@ -38,6 +39,17 @@ def index(request):
 def ping_host_api(request):
     return api_ping_host(request)
 
+# Updates the ping frequency in host_detail.html.
 @require_POST
 def update_ping_frequency_api(request):
     return api_update_ping_frequency(request)
+
+# Deletes ping or down times in the host_detail.html.
+@require_POST
+def delete_host_data_api(request):
+    return api_delete_host_data(request)
+
+# Refreshes the page after deleting ping or downtime data.
+@require_POST
+def update_host_data_api(request):
+    return api_update_host_data(request)

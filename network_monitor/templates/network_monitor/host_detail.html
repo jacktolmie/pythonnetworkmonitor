@@ -44,11 +44,38 @@
             </div>
 
             <div class="card">
-                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Summary Statistics</h2>
-                <p><strong>Average Ping Speed (Successful):</strong> {{ avg_ping_speed }}</p>
-                <p><strong>Total Downtime Events:</strong> {{ total_downtime_events }}</p>
-                <p><strong>Total Downtime Duration:</strong> {{ total_downtime_duration }}</p>
-                {# You can add more summary stats here, e.g., uptime percentage for a period #}
+                <div class="mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">Summary Statistics</h2>
+                    <p><strong>Average Ping Speed (Successful):</strong> {{ avg_ping_speed }}</p>
+                    <p><strong>Total Downtime Events:</strong> {{ total_downtime_events }}</p>
+                    <p><strong>Total Downtime Duration:</strong> {{ total_downtime_duration }}</p>
+                </div>
+                <div class="card">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">Delete Data</h2>
+                    <p>
+                        <label for="ping_delete_days">Number of days old to delete pings:</label>
+                        <input type="number" name="ping_delete_days" id="ping_delete_days" min="0" max="365" value="30">
+                        <input type="button"
+                               id="ping_delete_days_button"
+                               value="Delete"
+                               data-host-id="{{ host.id }}"
+                               data-host-name="{{ host.name }}"
+                        >
+
+                    </p>
+                    <p>
+                        <label for="downtime_delete_days">Number of days old to delete downtimes:</label>
+                        <input type="number" name="downtime_delete_days" id="downtime_delete_days" min="0" max="365" value="30">
+                        <input type="button"
+                               id="downtime_delete_days_button"
+                               value="Delete"
+                               data-host-id="{{ host.id }}"
+                               data-host-name="{{ host.name }}"
+                        >
+                    </p>
+                    <span id="delete-data-message" class="text-sm ml-2"></span>
+                </div>
+
             </div>
         </div>
 
@@ -56,7 +83,7 @@
             <h2 class="text-2xl font-semibold text-gray-700 mb-4">Recent Ping Results</h2>
             {% if recent_pings %}
                 <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-lg scrollable-table">
                         <thead>
                             <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
                                 <th class="py-3 px-6 text-left">Timestamp</th>
@@ -65,10 +92,10 @@
                                 <th class="py-3 px-6 text-left">Packet Loss (%)</th>
                             </tr>
                         </thead>
-                        <tbody class="text-gray-700 text-sm font-light">
-                            {% for ping in recent_pings %}
-                                {% include 'network_monitor/host_detail_ping.html' %}
-                            {% endfor %}
+                        <tbody class="scroll-tbody text-gray-700 text-sm font-light">
+                                {% for ping in recent_pings %}
+                                    {% include 'network_monitor/host_detail_ping.html' %}
+                                {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -81,7 +108,7 @@
             <h2 class="text-2xl font-semibold text-gray-700 mb-4">Recent Downtime Events</h2>
             {% if recent_downtime_events_data %}
                 <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-lg scrollable-table">
                         <thead>
                             <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
                                 <th class="py-3 px-6 text-left">Start Time</th>
@@ -89,7 +116,7 @@
                                 <th class="py-3 px-6 text-left">Duration</th>
                             </tr>
                         </thead>
-                        <tbody class="text-gray-700 text-sm font-light">
+                        <tbody class="scroll-tbody text-gray-700 text-sm font-light">
                             {% for event in recent_downtime_events_data %}
                                 {% include 'network_monitor/host_detail_downtime.html' %}
                             {% endfor %}

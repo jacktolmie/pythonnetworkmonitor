@@ -1,6 +1,5 @@
 import json
 from django.http import JsonResponse, HttpResponseBadRequest, HttpRequest
-from django.views.decorators.http import require_POST
 
 from modules import ping_node
 from network_monitor.models import Host

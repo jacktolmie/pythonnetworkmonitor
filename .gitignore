@@ -130,3 +130,4 @@ venv/
 .idea/prettier.xml
 celerybeat-schedule-shm
 celerybeat-schedule-wal
+network_monitor/tasks/generate_old_data.py

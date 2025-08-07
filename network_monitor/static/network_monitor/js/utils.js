@@ -11,9 +11,6 @@ export const utilsFormatUtcToLocal = (isoString) =>
 export const utilsDisplayUpdateMessage = (send_element, message, isError = false, duration = 3000) =>
     { return displayUpdateMessage(send_element, message, isError, duration) };
 
-// export const utilsGetCssVariable = (name) =>
-//     { return getCssVariable(name) };
-
 export const utilsGetDuration= () =>
     { return getDurations()}
 

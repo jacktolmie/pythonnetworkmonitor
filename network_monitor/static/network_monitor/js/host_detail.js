@@ -48,6 +48,67 @@ async function updatePingFrequency(hostId, frequency) {
     }
 }
 
+async function deleteData(hostId, table, days, message) {
+    
+    utilsDisplayUpdateMessage(
+        'delete-data-message',
+        message,
+        false,
+        message_display_duration_short
+    );
+
+    try {
+        const response = await fetch('/monitor/api/delete_host_data/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({host_id:hostId, database_name: table, days_old_max: days})
+        });
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            utilsDisplayUpdateMessage(
+                'delete-data-message',
+                `Deleted ${data.total_deleted} rows.`,
+                false,
+                message_display_duration_short
+            );
+            // Refresh the page to re-fetch updated ping/downtime data from the backend.
+            // The backend host detail view calls get_ping_downtime_data() to prepare fresh data.
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else {
+            const errorMessage = data.error || `Failed with status: ${response.status}`;
+            utilsDisplayUpdateMessage(
+                'delete-data-message',
+                `Failed to update: ${errorMessage}`,
+                true,
+                message_display_duration_long
+            );
+        }
+    } catch (error) {
+        utilsDisplayUpdateMessage(
+            'delete-data-message',
+            `An error occurred: ${error.message}`,
+            true,
+            message_display_duration_long
+        );
+    }
+
+}
+
+function handleEnterKeyPress(event, buttonToClick) {
+    if(event.key === "Enter") {
+        event.preventDefault();
+        buttonToClick.click();
+    }
+}
+
+
+
 // --- Main DOMContentLoaded Listener ---
 document.addEventListener('DOMContentLoaded', function () {
     const pingIntervalSelect = document.getElementById('ping-interval-select');
@@ -59,6 +120,37 @@ document.addEventListener('DOMContentLoaded', function () {
             await updatePingFrequency(hostId, frequency);
         };
     }
+
+    // Get information about number of days to remove from PingHost data table.
+    const deletePingButton = document.getElementById('ping_delete_days_button');
+    const deletePingDays = document.getElementById('ping_delete_days');
+
+    if (deletePingDays && deletePingButton) {
+        deletePingDays.addEventListener('keydown', (event) => handleEnterKeyPress(event, deletePingButton));
+    }
+
+    deletePingButton.addEventListener('click', async(event) => {
+        const hostId = event.target.dataset.hostId;
+        const hostName = event.target.dataset.hostName;
+        const daysToDelete = deletePingDays.value;
+        await deleteData(hostId, 'PingHost', daysToDelete, `Deleting ${daysToDelete} days from ${hostName}`)
+
+    })
+
+    // Get information about number of days to remove from HostDowntimeEvent data table.
+    const deleteDowntimeButton = document.getElementById('downtime_delete_days_button');
+    const deleteDowntimeDays = document.getElementById('downtime_delete_days');
+
+    if (deleteDowntimeDays && deleteDowntimeButton) {
+        deleteDowntimeDays.addEventListener('keydown', (event) => {handleEnterKeyPress(event, deleteDowntimeButton)})
+    }
+
+    deleteDowntimeButton.addEventListener('click', async(event) => {
+        const hostId = event.target.dataset.hostId;
+        const hostName = event.target.dataset.hostName;
+        const daysToDelete = deleteDowntimeDays.value;
+        await deleteData(hostId, "HostDowntimeEvent", daysToDelete, `Deleting ${daysToDelete} days from ${hostName}`);
+    });
 
     // Loops through all .js-local-datetime elements, and passes them onto the utilsFormatUtcToLocal.js file.
     document.querySelectorAll('.js-local-datetime').forEach(element => {

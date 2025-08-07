@@ -2,7 +2,7 @@
 from django.urls import path
 from . import views
 
-app_name = 'network_monitor' # Define app_name for namespacing
+app_name = 'network_monitor'
 
 urlpatterns = [
     # Main page
@@ -15,4 +15,6 @@ urlpatterns = [
     path('api/update_frequency/', views.update_ping_frequency_api, name='update_frequency_api'),
     path('api/delete_target/', views.delete_monitor_target_api, name='delete_target_api'),
     path('host/<int:host_id>/', views.host_detail_view_api, name='host_detail'),
+    path('api/delete_host_data/', views.delete_host_data_api, name='api_delete_host_data'),
+    path('api/update_host_data/', views.update_host_data_api, name='api_update_host_data'),
 ]
