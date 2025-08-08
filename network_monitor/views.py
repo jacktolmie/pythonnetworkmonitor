@@ -8,6 +8,7 @@ from modules.api_host_detail_view import api_host_detail_view
 from modules.api_ping_host import api_ping_host
 from modules.api_update_ping_frequency import api_update_ping_frequency
 from modules.api_delete_host_data import api_delete_host_data
+from modules.api_update_status import api_update_status
 
 # Adds a new target to be monitored.
 # Uses get_host_info with save=True.
@@ -53,3 +54,8 @@ def delete_host_data_api(request):
 @require_POST
 def update_host_data_api(request):
     return api_update_host_data(request)
+
+# Change if the host is monitored or not.
+@require_POST
+def update_status_api(request):
+    return api_update_status(request)

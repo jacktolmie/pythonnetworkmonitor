@@ -100,6 +100,56 @@ async function deleteData(hostId, table, days, message) {
 
 }
 
+async function updateMonitoredStatus(hostId, active)    {
+
+    utilsDisplayUpdateMessage(
+        'update_status',
+        'Updating Monitored Status...',
+        false,
+        message_display_duration_short
+    );
+
+    try {
+        const response = await fetch('/monitor/api/update_status/', {
+           method: 'POST',
+           headers: {
+               'Content-Type': 'application/json',
+               'X-CSRFToken': getCsrfToken()
+           },
+            body: JSON.stringify({id:hostId, is_active:active})
+        });
+        console.log(response)
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            utilsDisplayUpdateMessage(
+              'update_status',
+              'Updated Monitored Status',
+              false,
+              message_display_duration_short
+            );
+        }
+        else {
+            const errorMessage = data.error || `Failed to update Monitored Status: ${response.status}`;
+            utilsDisplayUpdateMessage(
+                'update_status',
+                `An error occurred: ${errorMessage}`,
+                true,
+                message_display_duration_long
+            );
+        }
+    }
+    catch(error) {
+        utilsDisplayUpdateMessage(
+            'update_status',
+            `An error occurred: ${error.message}`,
+            true,
+            message_display_duration_long
+        );
+    }
+
+}
+
 function handleEnterKeyPress(event, buttonToClick) {
     if(event.key === "Enter") {
         event.preventDefault();
@@ -111,6 +161,19 @@ function handleEnterKeyPress(event, buttonToClick) {
 
 // --- Main DOMContentLoaded Listener ---
 document.addEventListener('DOMContentLoaded', function () {
+
+    // Change activated/deactivated status
+    const  isActive = document.getElementById('is_active');
+
+    if (isActive) {
+        isActive.onchange = async (event) => {
+            const hostId = event.target.dataset.hostId;
+            const active = event.target.value;
+            await updateMonitoredStatus(hostId, active);
+        }
+    }
+
+    // Change ping interval
     const pingIntervalSelect = document.getElementById('ping-interval-select');
 
     if (pingIntervalSelect) {

@@ -5,9 +5,10 @@ This is just a basic monitoring program I wrote with A LOT of help from Gemini A
 It does the following:
 * Ping hosts with an option for number of pings.
 * Add hosts to monitor. Needs host name and IP, with optional description.
-* In the Host Detail page, there is three options:
+* In the Host Detail page, there is four options:
+  * Change monitoring status.
   * Update ping frequency.
-  * Delete specified number of pings
+  * Delete specified number of pings.
   * Delete specified number of downtimes.
 
 This was my first attempt at a full stack program. A lot of learning to get it done. Uses Django, JavaScript, Python, HTML and CSS.

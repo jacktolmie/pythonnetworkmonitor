@@ -27,7 +27,14 @@
                 <p><strong>Name:</strong> {{ host.name }}</p>
                 <p><strong>IP Address:</strong> {{ host.ip_address }}</p>
                 <p><strong>Description:</strong> {{ host.description|default:"N/A" }}</p>
-                <p><strong>Monitoring Status:</strong> {{ host.is_active|yesno:"Active,Inactive" }}</p>
+                <p><strong>Monitoring Status:</strong>
+                    <label for="is_active"></label>
+                    <select id="is_active" name="is_active" data-host-id="{{ host.id }}">
+                        <option value="active" {% if host.is_active %}selected {% endif %}>Active</option>
+                        <option value="inactive" {% if not host.is_active %}selected {% endif %}>Inactive</option>
+                    </select>
+                    <span id="update_status" class="text-sm ml-2"></span>
+                </p>
                 <p><strong>Current State:</strong> {{ host.is_currently_down|yesno:"Down,Up" }}</p>
                 <p><strong>Ping Interval:</strong>
                     <label for="ping-interval-select"></label>

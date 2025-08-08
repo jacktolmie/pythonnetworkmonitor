@@ -16,5 +16,5 @@ urlpatterns = [
     path('api/delete_target/', views.delete_monitor_target_api, name='delete_target_api'),
     path('host/<int:host_id>/', views.host_detail_view_api, name='host_detail'),
     path('api/delete_host_data/', views.delete_host_data_api, name='api_delete_host_data'),
-    path('api/update_host_data/', views.update_host_data_api, name='api_update_host_data'),
+    path('api/update_status/', views.update_status_api, name='api_update_host_data'),
 ]
