@@ -1,7 +1,6 @@
 # docker-compose.yml (Updated and Corrected)
 
 services:
-  # 1. Database and Broker Services (No major changes)
   db:
     image: postgres:16-alpine
     volumes:
@@ -20,58 +19,48 @@ services:
     restart: always
     env_file:
       - ./.env
-    # No need to expose Redis port to the host machine unless you want to connect from outside Docker
-    # ports:
-    #   - "6379:6379"
 
-  # 2. One-Time Setup Service
-  # This service runs first, applies migrations, and then exits.
   migrate:
     build: .
     # This command now includes collectstatic as well.
     command: sh -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput"
     volumes:
-      - static_data:/app/static_root
       - .:/app
+      - static_data:/app/static
     env_file:
       - ./.env
+    environment:
+      - DJANGO_STATIC_ROOT=/app/static
     depends_on:
       db:
-        # It will wait for the database to pass its healthcheck before running.
         condition: service_healthy
       redis:
-        # Redis starts fast, so a simple 'service_started' is fine.
         condition: service_started
 
-  # 3. Long-Running Application Services
-  # These services will only start AFTER the 'migrate' service has finished successfully.
   web:
     build: .
-    # The command is now simplified to only run the server.
-    # Use gunicorn for production instead of runserver for better performance.
     command: gunicorn pythonnetworkmonitor.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - .:/code
-      - static_data:/app/static_root
       - .:/app
     env_file:
       - ./.env
+    environment:
+      - DJANGO_STATIC_ROOT=/app/static
     depends_on:
       migrate:
-        # This is the key: it waits for the 'migrate' service to complete.
         condition: service_completed_successfully
+      redis:
+        condition: service_started
 
 
   nginx:
-      build:
-        context: .
-        dockerfile: Dockerfile.nginx
+      build: ./nginx
+#        context: .
+#        dockerfile: Dockerfile.nginx
       ports:
         - "80:80"
       volumes:
-        - static_data:/app/static_root
-        - static_volume:/usr/share/nginx/html/static/
-        - ./nginx.conf:/etc/nginx/conf.d/default.con
+        - static_data:/vol/static
       depends_on:
         - web
 
@@ -89,10 +78,8 @@ services:
 
   celery-beat:
     build: .
-    # Corrected a small typo in the scheduler path (. instead of ..)
     command: celery -A pythonnetworkmonitor beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
-      # Changed this to /app to be consistent with other services.
       - .:/app
     env_file:
       - ./.env

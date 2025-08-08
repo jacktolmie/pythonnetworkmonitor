@@ -4,8 +4,6 @@ Django settings for pythonnetworkmonitor project.
 from datetime import timedelta
 from pathlib import Path
 import os
-
-# Import environ to handle environment variables more robustly
 import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -94,7 +92,13 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "static_"
+# STATIC_ROOT = BASE_DIR / "static_"
+STATIC_ROOT = env('DJANGO_STATIC_ROOT', default=(BASE_DIR / 'staticfiles'))
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'network_monitor' / 'static',
+    # Add other app static directories if you have them
+]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
