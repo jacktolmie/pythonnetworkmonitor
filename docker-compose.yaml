@@ -18,6 +18,8 @@ services:
   redis:
     image: redis:7-alpine
     restart: always
+    env_file:
+      - ./.env
     # No need to expose Redis port to the host machine unless you want to connect from outside Docker
     # ports:
     #   - "6379:6379"
