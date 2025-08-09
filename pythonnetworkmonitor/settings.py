@@ -10,7 +10,6 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Use django-environ to read the .env file.
-# This makes it easier to manage all your settings from one place.
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
@@ -97,7 +96,6 @@ STATIC_ROOT = env('DJANGO_STATIC_ROOT', default=(BASE_DIR / 'staticfiles'))
 
 STATICFILES_DIRS = [
     BASE_DIR / 'network_monitor' / 'static',
-    # Add other app static directories if you have them
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
